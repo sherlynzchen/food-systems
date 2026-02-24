@@ -1,23 +1,2263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Food Systems of the World</title>
-  <style>
-    body {
-      font-family: Georgia, serif;
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 40px 20px;
-      background: #fafaf7;
-      color: #222;
-    }
-    h1 { font-size: 2.5em; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>How the World Eats — A Food Systems Charticle</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;600;700&display=swap');
+
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+
+:root {
+  --ink:    #051C2C;
+  --blue-1: #002960;
+  --blue-2: #0D5EA6;
+  --blue-3: #307FBF;
+  --blue-4: #7EC8E3;
+  --blue-5: #C8E6F5;
+  --blue-6: #EBF5FB;
+  --grey-1: #4A4F55;
+  --grey-2: #8C9399;
+  --grey-3: #C9CDD1;
+  --grey-4: #E8EAEC;
+  --grey-5: #F5F6F7;
+  --white:  #FFFFFF;
+  --green:  #006B3C;
+  --green-lt:#E6F4EE;
+  --amber:  #B54708;
+  --amber-lt:#FEF3E2;
+  --red:    #C01B2D;
+  --red-lt: #FCECEA;
+}
+
+html { scroll-behavior: smooth; }
+body {
+  background: var(--white);
+  color: var(--ink);
+  font-family: 'Source Sans 3','Helvetica Neue',sans-serif;
+  overflow-x: hidden;
+}
+
+/* ══ SITE NAV ══ */
+.site-nav {
+  position: fixed; top:0; left:0; right:0; z-index:1000;
+  background: var(--blue-1);
+  display:flex; align-items:center;
+  padding: 0 3vw;
+  height: 48px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.25);
+}
+.nav-brand {
+  font-family:'Libre Baskerville',serif;
+  font-size:0.85rem; font-weight:700;
+  color: rgba(255,255,255,0.9);
+  letter-spacing:0.02em;
+  margin-right: 2rem;
+  white-space:nowrap;
+  text-decoration:none;
+}
+.nav-links {
+  display:flex; gap:0; overflow-x:auto;
+  scrollbar-width:none;
+}
+.nav-links::-webkit-scrollbar{display:none;}
+.nav-link {
+  font-size:0.68rem; font-weight:600;
+  letter-spacing:0.1em; text-transform:uppercase;
+  color:rgba(255,255,255,0.55);
+  padding:0 1rem; height:48px;
+  display:flex; align-items:center;
+  text-decoration:none; white-space:nowrap;
+  border-bottom:2px solid transparent;
+  transition:color 0.2s, border-color 0.2s;
+}
+.nav-link:hover, .nav-link.active {
+  color:rgba(255,255,255,0.95);
+  border-bottom-color: var(--blue-4);
+}
+.nav-progress {
+  position:absolute; bottom:0; left:0;
+  height:2px; background:var(--blue-4);
+  transition: width 0.1s linear;
+  width:0%;
+}
+
+/* ══ HERO ══ */
+.hero {
+  min-height: 100vh;
+  background: var(--blue-1);
+  display:flex; flex-direction:column; justify-content:flex-end;
+  padding: 0 6vw 5rem;
+  position:relative; overflow:hidden;
+}
+.hero-bg-lines {
+  position:absolute; inset:0; pointer-events:none; opacity:0.06;
+}
+.hero-kicker {
+  font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase;
+  color:var(--blue-4); font-weight:600; margin-bottom:1.2rem;
+}
+.hero-title {
+  font-family:'Libre Baskerville',serif;
+  font-size:clamp(3rem,7vw,6.5rem);
+  font-weight:700; line-height:1.0;
+  color:var(--white); max-width:900px;
+  margin-bottom:1.8rem;
+}
+.hero-title em { font-style:italic; color:var(--blue-4); }
+.hero-subtitle {
+  font-size:clamp(1rem,1.8vw,1.25rem);
+  color:rgba(255,255,255,0.65);
+  font-weight:300; line-height:1.75;
+  max-width:620px; margin-bottom:2.5rem;
+}
+.hero-meta {
+  display:flex; gap:2.5rem; align-items:center; flex-wrap:wrap;
+}
+.hero-meta-item {
+  font-size:0.72rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:rgba(255,255,255,0.4);
+}
+.hero-scroll-hint {
+  position:absolute; bottom:2.5rem; right:5vw;
+  font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase;
+  color:rgba(255,255,255,0.3);
+  animation: fadeUpDown 2.5s ease-in-out infinite;
+}
+@keyframes fadeUpDown {
+  0%,100%{opacity:0.3;transform:translateY(0);}
+  50%{opacity:0.7;transform:translateY(-5px);}
+}
+
+/* ══ CHAPTER SECTIONS ══ */
+.chapter-section {
+  padding-top: 48px; /* nav offset */
+}
+
+/* chapter header */
+.chapter-header {
+  max-width:1400px; margin:0 auto;
+  padding: 3.5rem 5vw 2rem;
+  border-bottom: 2px solid var(--blue-1);
+  display:grid; grid-template-columns:1fr 1fr; gap:2rem; align-items:end;
+}
+.chapter-header.full { grid-template-columns:1fr; }
+@media(max-width:700px){.chapter-header{grid-template-columns:1fr;}}
+
+.chapter-label {
+  font-size:0.62rem; letter-spacing:0.25em; text-transform:uppercase;
+  color:var(--blue-2); font-weight:600; margin-bottom:0.7rem;
+}
+.chapter-h2 {
+  font-family:'Libre Baskerville',serif;
+  font-size:clamp(1.8rem,3.5vw,3rem);
+  font-weight:700; line-height:1.1; color:var(--ink);
+}
+.chapter-h2 em { font-style:italic; color:var(--blue-2); }
+.chapter-lede {
+  font-size:0.95rem; line-height:1.78; color:var(--grey-1);
+  font-weight:300; max-width:440px;
+  justify-self:end; align-self:end;
+}
+
+/* chapter body wrap */
+.chapter-body {
+  max-width:1400px; margin:0 auto; padding:0 5vw 3rem;
+}
+
+/* between-chapters divider */
+.chapter-divider {
+  max-width:1400px; margin:0 auto;
+  border:none; border-top:1px solid var(--grey-4);
+  margin-top:0; margin-bottom:0;
+}
+
+/* ══ INLINE NARRATIVE TEXT ══ */
+.narrative {
+  max-width:680px; margin:2rem auto 0;
+  font-size:1rem; line-height:1.82;
+  color:var(--grey-1); font-weight:300;
+}
+.narrative strong { font-weight:600; color:var(--ink); }
+.narrative em { font-style:italic; }
+
+/* ══ STAT PULL-QUOTES ══ */
+.stat-row {
+  display:grid; grid-template-columns:repeat(3,1fr); gap:1px;
+  background:var(--grey-4); border:1px solid var(--grey-4);
+  margin:2rem 0;
+}
+.stat-cell {
+  background:var(--white); padding:1.4rem 1.6rem;
+}
+.stat-num {
+  font-family:'Libre Baskerville',serif;
+  font-size:2.4rem; font-weight:700; color:var(--blue-1); line-height:1;
+  margin-bottom:0.3rem;
+}
+.stat-lbl {
+  font-size:0.68rem; letter-spacing:0.1em; text-transform:uppercase;
+  color:var(--grey-2); font-weight:600; margin-bottom:0.35rem;
+}
+.stat-desc {
+  font-size:0.82rem; line-height:1.55; color:var(--grey-1); font-weight:300;
+}
+@media(max-width:600px){.stat-row{grid-template-columns:1fr;}}
+
+/* ══ FOOTNOTE ══ */
+.section-footnote {
+  font-size:0.68rem; color:var(--grey-2); font-style:italic;
+  margin-top:1rem; padding-top:0.8rem;
+  border-top:1px solid var(--grey-4);
+}
+
+
+/* ══ CH1 DONUT / RADIAL ══ */
+.ch1-vis { max-width:900px; margin:0 auto; padding:1.5rem 0 0; }
+#ch1-svg { display:block; width:100%; overflow:visible; }
+.ch1-legend {
+  display:flex; flex-wrap:wrap; justify-content:center;
+  gap:0.5rem 1.4rem; padding:0.5rem 0 1rem;
+}
+.ch1-leg-item {
+  display:flex; align-items:center; gap:0.35rem;
+  font-size:0.72rem; color:var(--grey-2);
+}
+.ch1-leg-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+
+/* ══ CH2 TIMELINE ══ */
+.ch2-vis { width:100%; margin-top:1.5rem; overflow-x:auto; }
+#ch2-svg { display:block; min-width:700px; }
+
+/* ══ CH3 MAP ══ */
+.ch3-controls {
+  padding:1.2rem 0 0.8rem;
+  display:flex; align-items:center; gap:1.2rem; flex-wrap:wrap;
+}
+.ch3-map-wrap {
+  position:relative; width:100%;
+  border-top:2px solid var(--blue-1);
+  border-bottom:2px solid var(--blue-1);
+}
+#ch3-svg { display:block; width:100%; }
+.ch3-panel {
+  position:absolute; top:1.5rem; right:2vw;
+  width:210px; background:rgba(255,255,255,0.96);
+  border:1px solid var(--grey-3); border-left:3px solid var(--blue-2);
+  padding:1rem 1.1rem;
+  opacity:0; transform:translateX(8px);
+  transition:opacity 0.28s, transform 0.28s;
+  pointer-events:none;
+  box-shadow:0 2px 16px rgba(5,28,44,0.1);
+}
+.ch3-panel.visible{opacity:1;transform:translateX(0);pointer-events:all;}
+.ch3-panel-close{position:absolute;top:0.4rem;right:0.6rem;background:none;border:none;color:var(--grey-2);font-size:0.9rem;cursor:pointer;}
+.ch3-panel-name{font-family:'Libre Baskerville',serif;font-size:1.1rem;margin-bottom:0.1rem;}
+.ch3-panel-role{font-size:0.6rem;letter-spacing:0.14em;text-transform:uppercase;color:var(--grey-2);margin-bottom:0.7rem;}
+.ch3-panel-nums{display:flex;gap:1rem;margin-bottom:0.7rem;}
+.ch3-num-lbl{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey-2);}
+.ch3-num-val{font-family:'Libre Baskerville',serif;font-size:1.3rem;font-weight:700;color:var(--ink);}
+.ch3-num-unit{font-size:0.6rem;color:var(--grey-2);}
+.ch3-partners-lbl{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--grey-2);margin-bottom:0.4rem;}
+.ch3-p-row{display:flex;align-items:center;gap:0.4rem;padding:0.22rem 0;border-bottom:1px solid var(--grey-4);font-size:0.72rem;color:var(--grey-1);}
+.ch3-p-bar-wrap{flex:1;height:2px;background:var(--grey-4);}
+.ch3-p-bar{height:2px;border-radius:1px;}
+.ch3-p-vol{font-size:0.65rem;color:var(--blue-2);font-weight:600;}
+
+/* commodity buttons */
+.comm-btn {
+  background:var(--white); border:1px solid var(--grey-3);
+  color:var(--grey-1); font-family:'Source Sans 3',sans-serif;
+  font-size:0.72rem; font-weight:400; letter-spacing:0.07em;
+  text-transform:uppercase; padding:0.3rem 0.85rem;
+  cursor:pointer; transition:all 0.18s; outline:none;
+  border-radius:0;
+}
+.comm-btn:hover{color:var(--blue-2);border-color:var(--blue-2);background:var(--blue-6);}
+.comm-btn[data-c="wheat"]   { --cc:#002960; }
+.comm-btn[data-c="soy"]     { --cc:#0D5EA6; }
+.comm-btn[data-c="rice"]    { --cc:#307FBF; }
+.comm-btn[data-c="palmoil"] { --cc:#1A4A80; }
+.comm-btn[data-c="maize"]   { --cc:#5A9BC0; }
+.comm-btn .cdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cc);margin-right:6px;vertical-align:middle;}
+.comm-btn.active{color:var(--white);border-color:var(--cc);background:var(--cc);font-weight:600;}
+
+/* ══ CH4 SCATTER ══ */
+.ch4-vis { margin-top:1.5rem; position:relative; }
+#ch4-svg { display:block; width:100%; }
+
+/* ══ CH5 CONSTELLATION ══ */
+.ch5-scroll-outer { position:relative; min-height:100vh; }
+.ch5-sticky {
+  position:sticky; top:48px;
+  height:calc(100vh - 48px);
+  overflow:hidden; background:var(--white);
+  z-index:1;
+}
+#ch5-svg { position:absolute; inset:0; width:100%; height:100%; }
+.ch5-legend {
+  position:absolute; top:1.2rem; right:1.5vw;
+  background:rgba(255,255,255,0.95);
+  border:1px solid var(--grey-3);
+  padding:0.8rem 1rem;
+  box-shadow:0 2px 12px rgba(5,28,44,0.08);
+}
+.ch5-leg-title{font-size:0.57rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.5rem;}
+.ch5-leg-row{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.3rem;font-size:0.72rem;color:var(--grey-1);}
+.ch5-leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.ch5-counter{position:absolute;bottom:1.5rem;left:50%;transform:translateX(-50%);text-align:center;pointer-events:none;}
+.ch5-counter-num{font-family:'Libre Baskerville',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:700;color:var(--blue-1);line-height:1;}
+.ch5-counter-lbl{font-size:0.65rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--grey-2);margin-top:0.15rem;}
+.ch5-steps{position:relative;z-index:2;pointer-events:none;}
+.ch5-step{min-height:100vh;display:flex;align-items:center;padding:0 5vw;pointer-events:none;}
+.ch5-step:last-child{min-height:130vh;}
+.ch5-card{
+  pointer-events:all; max-width:320px;
+  background:rgba(255,255,255,0.97);
+  border-left:3px solid var(--blue-1);
+  padding:1.2rem 1.4rem;
+  box-shadow:0 2px 20px rgba(5,28,44,0.09);
+}
+.ch5-card.right{margin-left:auto;border-left:none;border-right:3px solid var(--blue-1);}
+.ch5-step-num{font-size:0.57rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.45rem;}
+.ch5-card-title{font-family:'Libre Baskerville',serif;font-size:1.05rem;font-weight:700;line-height:1.25;margin-bottom:0.5rem;}
+.ch5-card-body{font-size:0.82rem;line-height:1.68;color:var(--grey-1);font-weight:300;}
+.ch5-card-body strong{font-weight:600;color:var(--ink);}
+.ch5-chips{display:flex;flex-wrap:wrap;gap:0.3rem;margin-top:0.7rem;}
+.chip{font-size:0.62rem;letter-spacing:0.08em;padding:0.18rem 0.55rem;border:1px solid;font-weight:600;text-transform:uppercase;}
+.chip-conflict{color:var(--blue-1);border-color:var(--blue-1);background:var(--blue-6);}
+.chip-climate{color:var(--blue-3);border-color:var(--blue-3);background:#EDF6FB;}
+.chip-economic{color:var(--blue-2);border-color:var(--blue-2);background:var(--blue-6);}
+.chip-poverty{color:#1a6a8a;border-color:var(--blue-4);background:#EDF8FC;}
+
+/* ══ CH7 LEVERS ══ */
+.ch7-wrap{padding-top:0;}
+.ch7-presets-bar{
+  padding:0.7rem 0 1rem;
+  display:flex; align-items:center; gap:0.7rem; flex-wrap:wrap;
+}
+.ch7-presets-lbl{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;flex-shrink:0;}
+.preset-btn{background:var(--white);border:1px solid var(--grey-3);color:var(--grey-1);font-family:'Source Sans 3',sans-serif;font-size:0.75rem;padding:0.3rem 0.8rem;cursor:pointer;transition:all 0.18s;}
+.preset-btn:hover{border-color:var(--blue-2);color:var(--blue-2);background:var(--blue-6);}
+.preset-btn.selected{border-color:var(--blue-1);color:var(--blue-1);background:var(--blue-6);font-weight:600;}
+.ch7-reset{background:none;border:1px solid var(--grey-3);color:var(--grey-2);font-family:'Source Sans 3',sans-serif;font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;padding:0.25rem 0.65rem;cursor:pointer;transition:all 0.18s;margin-left:auto;}
+.ch7-reset:hover{border-color:var(--blue-2);color:var(--blue-2);}
+
+.ch7-board{display:grid;grid-template-columns:1fr 360px;gap:2.5rem;align-items:start;}
+@media(max-width:900px){.ch7-board{grid-template-columns:1fr;}}
+
+.ch7-levers-title{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:1rem;padding-bottom:0.6rem;border-bottom:1px solid var(--grey-4);}
+.lever-card{background:var(--white);border:1px solid var(--grey-4);border-left:3px solid var(--grey-3);padding:1rem 1.2rem;margin-bottom:0.6rem;transition:border-left-color 0.3s,background 0.3s;}
+.lever-card.active{border-left-color:var(--blue-2);}
+.lever-card.maxed{border-left-color:var(--green);background:var(--green-lt);}
+.lever-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.3rem;gap:0.5rem;}
+.lever-name{font-size:0.84rem;font-weight:600;color:var(--ink);line-height:1.3;}
+.lever-tag{font-size:0.57rem;letter-spacing:0.1em;text-transform:uppercase;font-weight:600;padding:0.16rem 0.45rem;border:1px solid;flex-shrink:0;}
+.tag-high{color:var(--green);border-color:var(--green);background:var(--green-lt);}
+.tag-medium{color:var(--blue-2);border-color:var(--blue-2);background:var(--blue-6);}
+.lever-desc{font-size:0.74rem;line-height:1.54;color:var(--grey-2);margin-bottom:0.7rem;font-weight:300;}
+.slider-wrap{display:flex;align-items:center;gap:0.8rem;}
+.slider-track-wrap{flex:1;position:relative;height:20px;display:flex;align-items:center;}
+input[type="range"]{-webkit-appearance:none;width:100%;height:4px;background:transparent;outline:none;cursor:pointer;position:relative;z-index:2;}
+input[type="range"]::-webkit-slider-runnable-track{height:4px;background:var(--grey-4);border-radius:2px;}
+input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:15px;height:15px;border-radius:50%;background:var(--blue-2);border:2px solid var(--white);box-shadow:0 1px 4px rgba(5,28,44,0.2);margin-top:-5.5px;transition:background 0.2s,transform 0.1s;}
+input[type="range"]:hover::-webkit-slider-thumb{background:var(--blue-1);transform:scale(1.15);}
+input[type="range"]::-moz-range-track{height:4px;background:var(--grey-4);border-radius:2px;}
+input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;background:var(--blue-2);border:2px solid var(--white);}
+.slider-fill{position:absolute;left:0;top:50%;height:4px;border-radius:2px;background:var(--blue-2);transform:translateY(-50%);pointer-events:none;z-index:1;}
+.slider-labels{display:flex;justify-content:space-between;margin-top:0.15rem;font-size:0.57rem;color:var(--grey-3);}
+.lever-val{font-family:'Libre Baskerville',serif;font-size:1.05rem;font-weight:700;color:var(--blue-1);min-width:32px;text-align:right;line-height:1;}
+.lever-val-unit{font-size:0.56rem;color:var(--grey-2);font-family:'Source Sans 3',sans-serif;font-weight:400;}
+
+.ch7-outcome{position:sticky;top:80px;display:flex;flex-direction:column;gap:1rem;}
+.ch7-score-card{background:var(--white);border:1px solid var(--grey-4);border-top:3px solid var(--blue-1);padding:1.3rem 1.5rem;text-align:center;}
+.ch7-score-lbl{font-size:0.57rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.7rem;}
+#dial-svg{display:block;margin:0 auto;}
+.ch7-score-num{font-family:'Libre Baskerville',serif;font-size:2.8rem;font-weight:700;color:var(--blue-1);line-height:1;transition:color 0.5s;}
+.ch7-score-unit{font-size:0.78rem;color:var(--grey-2);margin-top:0.15rem;display:block;}
+.ch7-verdict{margin-top:0.6rem;font-size:0.74rem;font-weight:600;letter-spacing:0.04em;padding:0.3rem 0.8rem;display:inline-block;transition:all 0.4s;}
+.ch7-breakdown{background:var(--white);border:1px solid var(--grey-4);padding:1rem 1.2rem;}
+.ch7-card-title{font-size:0.57rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.8rem;padding-bottom:0.45rem;border-bottom:1px solid var(--grey-4);}
+.impact-bar-row{display:flex;align-items:center;gap:0.5rem;margin-bottom:0.45rem;}
+.impact-bar-name{font-size:0.67rem;color:var(--grey-1);width:95px;flex-shrink:0;line-height:1.3;}
+.impact-bar-track{flex:1;height:5px;background:var(--grey-4);border-radius:3px;overflow:hidden;}
+.impact-bar-fill{height:5px;border-radius:3px;background:var(--blue-2);transition:width 0.5s cubic-bezier(0.4,0,0.2,1);}
+.impact-bar-val{font-size:0.67rem;font-weight:600;color:var(--blue-1);min-width:28px;text-align:right;}
+.ch7-sparkline{background:var(--white);border:1px solid var(--grey-4);padding:1rem 1.2rem;}
+#spark-svg{display:block;width:100%;}
+.spark-legend{display:flex;gap:1rem;margin-top:0.4rem;font-size:0.65rem;color:var(--grey-2);}
+.spark-leg-item{display:flex;align-items:center;gap:0.3rem;}
+
+/* ══ SHARED TOOLTIP ══ */
+.global-tip{
+  position:fixed;pointer-events:none;
+  background:var(--white);
+  border:1px solid var(--grey-3);
+  border-top:3px solid var(--blue-2);
+  box-shadow:0 4px 20px rgba(5,28,44,0.12);
+  padding:0.85rem 1rem;
+  opacity:0;transition:opacity 0.15s;
+  z-index:2000;max-width:280px;
+}
+.global-tip strong{font-family:'Libre Baskerville',serif;font-size:0.95rem;color:var(--ink);display:block;margin-bottom:0.15rem;}
+.global-tip span{font-size:0.76rem;color:var(--grey-1);}
+.tip-basket{margin-top:0.6rem;border-top:1px solid var(--grey-4);padding-top:0.5rem;}
+.tip-basket-title{font-size:0.56rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;}
+.tip-basket-row{display:flex;align-items:center;gap:0.4rem;margin-bottom:0.25rem;}
+.tip-basket-label{font-size:0.68rem;color:var(--grey-1);width:72px;flex-shrink:0;}
+.tip-basket-bar-track{flex:1;height:4px;background:var(--grey-4);border-radius:2px;overflow:hidden;}
+.tip-basket-bar{height:4px;border-radius:2px;transition:width 0.3s;}
+.tip-basket-val{font-size:0.68rem;font-weight:600;color:var(--blue-1);min-width:30px;text-align:right;}
+.tip-basket-total{font-size:0.72rem;font-weight:600;color:var(--ink);margin-top:0.4rem;text-align:right;border-top:1px solid var(--grey-4);padding-top:0.3rem;}
+
+/* ══ FOOTER ══ */
+.site-footer{
+  background:var(--blue-1); color:rgba(255,255,255,0.6);
+  padding:3rem 5vw;
+  font-size:0.8rem; line-height:1.7;
+}
+.footer-inner{max-width:1400px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:3rem;}
+.footer-brand{font-family:'Libre Baskerville',serif;font-size:1.1rem;font-weight:700;color:rgba(255,255,255,0.9);margin-bottom:0.8rem;}
+.footer-note{font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.6;margin-top:1.5rem;}
+@media(max-width:600px){.footer-inner{grid-template-columns:1fr;}}
+
+/* ══ CH6 FOOD INSECURITY — OPTION TABS ══ */
+.opt-tabs-bar {
+  background: var(--blue-1);
+  padding: 0 5vw;
+  display: flex; gap: 0;
+  border-top: 1px solid rgba(255,255,255,0.1);
+}
+.opt-tab {
+  padding: 0.85rem 1.4rem;
+  font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  cursor: pointer; border: none; background: none;
+  border-bottom: 3px solid transparent;
+  transition: all 0.18s;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.opt-tab:hover { color: rgba(255,255,255,0.8); }
+.opt-tab.active { color: white; border-bottom-color: var(--blue-4); }
+.option-panel { display: none; }
+.option-panel.active { display: block; }
+
+/* Option 3 specific */
+#opt3-svg { display: block; width: 100%; overflow: visible; }
+
+/* Option 4 grid */
+.sm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5px;
+  background: var(--grey-4);
+}
+.sm-panel {
+  background: var(--white);
+  padding: 1.2rem 1.4rem 0.8rem;
+}
+.sm-panel-title {
+  font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--grey-2); font-weight: 600; margin-bottom: 0.3rem;
+}
+.sm-panel-n {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 0.95rem; font-weight: 700; color: var(--ink);
+  margin-bottom: 0.8rem;
+  display: flex; align-items: baseline; gap: 0.4rem;
+}
+.sm-panel-n span { font-size: 0.7rem; font-weight: 400; color: var(--grey-2); font-family: 'Source Sans 3', sans-serif; }
+.sm-svg { display: block; width: 100%; }
+
+/* sort controls */
+.sort-controls {
+  display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1.2rem;
+}
+.sort-lbl {
+  font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--grey-2); font-weight: 600;
+}
+.sort-btn {
+  background: var(--white); border: 1px solid var(--grey-3);
+  color: var(--grey-1); font-family: 'Source Sans 3', sans-serif;
+  font-size: 0.7rem; letter-spacing: 0.06em; text-transform: uppercase;
+  padding: 0.25rem 0.7rem; cursor: pointer; transition: all 0.18s;
+}
+.sort-btn:hover { border-color: var(--blue-2); color: var(--blue-2); }
+.sort-btn.active { border-color: var(--blue-1); color: var(--white); background: var(--blue-1); }
+
+/* ch6 chart wrap */
+.ch6-chart-wrap { background: var(--white); border: 1px solid var(--grey-4); padding: 1.6rem 1.8rem 1rem; }
+.ch6-chart-title { font-size: 0.82rem; font-weight: 700; color: var(--ink); margin-bottom: 0.2rem; }
+.ch6-chart-subtitle { font-size: 0.72rem; color: var(--grey-2); margin-bottom: 1.2rem; font-weight: 300; }
+
+/* agri legend */
+.agri-legend {
+  display: flex; gap: 1.8rem; flex-wrap: wrap;
+  margin-bottom: 1.4rem; align-items: center;
+  padding: 0.75rem 0; border-top: 1px solid var(--grey-4); border-bottom: 1px solid var(--grey-4);
+}
+.agri-leg-item { display: flex; align-items: center; gap: 0.45rem; }
+.agri-leg-swatch { width: 14px; height: 14px; flex-shrink: 0; }
+.agri-leg-swatch.stripe { 
+  background: repeating-linear-gradient(45deg, var(--red) 0, var(--red) 2px, transparent 2px, transparent 5px);
+  border: 1px solid var(--red);
+}
+.agri-leg-label { font-size: 0.74rem; color: var(--grey-1); }
+.agri-leg-label strong { font-weight: 600; color: var(--ink); }
+
+/* food insecurity tooltip (separate from global-tip) */
+.fi-tip {
+  position: fixed; pointer-events: none;
+  background: var(--white); border: 1px solid var(--grey-3);
+  border-top: 3px solid var(--blue-2);
+  box-shadow: 0 4px 20px rgba(5,28,44,0.13);
+  padding: 0.8rem 1rem;
+  opacity: 0; transition: opacity 0.12s;
+  z-index: 999; max-width: 250px;
+}
+.fi-tip-name { font-family: 'Libre Baskerville', serif; font-size: 0.9rem; color: var(--ink); margin-bottom: 0.5rem; }
+.fi-tip-row { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.2rem; font-size: 0.72rem; }
+.fi-tip-row-label { color: var(--grey-2); }
+.fi-tip-row-val { font-weight: 600; color: var(--ink); }
+.fi-tip-excess { margin-top: 0.5rem; padding-top: 0.4rem; border-top: 1px solid var(--grey-4); font-size: 0.72rem; }
+
+@media (max-width: 700px) {
+  .sm-grid { grid-template-columns: 1fr; }
+}
+</style>
 </head>
 <body>
-  <h1>Food Systems of the World</h1>
-  <p>A data-driven exploration of how humanity grows, trades, and consumes food.</p>
+<!-- ══ NAVIGATION ══ -->
+<nav class="site-nav">
+  <a class="nav-brand" href="#hero">How the World Eats</a>
+  <div class="nav-links">
+    <a class="nav-link" href="#ch1">I. Abundance Paradox</a>
+    <a class="nav-link" href="#ch2">II. Soil Beneath</a>
+    <a class="nav-link" href="#ch3">III. Grain Routes</a>
+    <a class="nav-link" href="#ch4">IV. Price of a Plate</a>
+    <a class="nav-link" href="#ch5">V. Face of Hunger</a>
+    <a class="nav-link" href="#ch7">VI. Paths Forward</a>
+    <a class="nav-link" href="#ch6">VII. Explaining Insecurity</a>
+  </div>
+  <div class="nav-progress" id="nav-progress"></div>
+</nav>
+
+<!-- ══ HERO ══ -->
+<section class="hero" id="hero">
+  <svg class="hero-bg-lines" viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
+    <!-- decorative grid lines -->
+    <line x1="0" y1="200" x2="1400" y2="200" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="400" x2="1400" y2="400" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="600" x2="1400" y2="600" stroke="white" stroke-width="0.5"/>
+    <line x1="0" y1="800" x2="1400" y2="800" stroke="white" stroke-width="0.5"/>
+    <line x1="200" y1="0" x2="200" y2="900" stroke="white" stroke-width="0.5"/>
+    <line x1="500" y1="0" x2="500" y2="900" stroke="white" stroke-width="0.5"/>
+    <line x1="800" y1="0" x2="800" y2="900" stroke="white" stroke-width="0.5"/>
+    <line x1="1100" y1="0" x2="1100" y2="900" stroke="white" stroke-width="0.5"/>
+    <circle cx="700" cy="450" r="320" fill="none" stroke="white" stroke-width="0.5"/>
+    <circle cx="700" cy="450" r="180" fill="none" stroke="white" stroke-width="0.5"/>
+  </svg>
+  <div class="hero-kicker">A data-driven charticle</div>
+  <h1 class="hero-title">How the<br><em>World Eats</em></h1>
+  <p class="hero-subtitle">The world grows enough calories to feed every person alive. Yet 282 million go to bed hungry every night. This is the story of abundance, inequality, and the levers we haven't pulled.</p>
+  <div class="hero-meta">
+    <span class="hero-meta-item">6 chapters</span>
+    <span class="hero-meta-item">6 interactive visualisations</span>
+    <span class="hero-meta-item">Sources: FAO · WFP · UN Comtrade · FAOSTAT · FSIN</span>
+  </div>
+  <div class="hero-scroll-hint">scroll to begin ↓</div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 1 — THE ABUNDANCE PARADOX
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch1">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">Chapter I — The Abundance Paradox</div>
+      <h2 class="chapter-h2">The world grows enough<br>to feed everyone.<br><em>So why doesn't it?</em></h2>
+    </div>
+    <p class="chapter-lede">Every year, humanity produces over 9,800 trillion calories — enough for every person alive. Yet a third never becomes food. Follow the flow from field to fate.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch1-vis">
+      <svg id="ch1-svg" viewBox="0 0 820 660"></svg>
+    </div>
+    <div class="ch1-legend" id="ch1-legend"></div>
+    <div class="stat-row">
+      <div class="stat-cell">
+        <div class="stat-lbl">Total production</div>
+        <div class="stat-num">9,800<span style="font-size:1.2rem">T</span></div>
+        <div class="stat-desc">Trillion kcal produced globally per year — enough for 10 billion people at 2,500 kcal/day.</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-lbl">Lost or wasted</div>
+        <div class="stat-num" style="color:var(--red)">~30%</div>
+        <div class="stat-desc">Of all food produced is lost post-harvest, in transit, at retail, or in homes. The largest single addressable intervention.</div>
+      </div>
+      <div class="stat-cell">
+        <div class="stat-lbl">Used as animal feed</div>
+        <div class="stat-num">31%</div>
+        <div class="stat-desc">Of global crop calories are fed to livestock, returning only 15–20% as meat and dairy — a caloric inefficiency at scale.</div>
+      </div>
+    </div>
+    <p class="section-footnote">Sources: FAO Food Balance Sheets 2022 · WRAP Global Food Waste Assessment · IFPRI · Data illustrative based on published ranges.</p>
+  </div>
+</section>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 2 — THE SOIL BENEATH EVERYTHING
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch2">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">Chapter II — The Soil Beneath Everything</div>
+      <h2 class="chapter-h2">Every breakthrough<br>carried a <em>hidden invoice.</em></h2>
+    </div>
+    <p class="chapter-lede">Ten thousand years of agricultural history on a single spine. Branch width = yield impact. Branch colour = ecological cost. Hover any branch to read the trade-off story.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch2-vis">
+      <svg id="ch2-svg"></svg>
+    </div>
+    <p class="section-footnote">Sources: IPBES Biodiversity Assessment · IPCC AR6 · Potsdam Institute crop model projections · Historical agricultural data: FAO/OECD.</p>
+  </div>
+</section>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 3 — WHERE FOOD COMES FROM
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch3">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">Chapter III — Where Food Comes From</div>
+      <h2 class="chapter-h2">The grain routes<br>of a hungry <em>world</em></h2>
+    </div>
+    <p class="chapter-lede">Five commodities. Hundreds of trade lanes. A handful of nations hold what the world eats. Click any glowing country to trace its full web of supply and demand.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch3-controls">
+      <span style="font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--grey-2);font-weight:600;align-self:center;">Commodity</span>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+        <button class="comm-btn active" data-c="wheat"   onclick="ch3SetCommodity('wheat',this)"><span class="cdot"></span>Wheat</button>
+        <button class="comm-btn" data-c="soy"    onclick="ch3SetCommodity('soy',this)"><span class="cdot"></span>Soybean</button>
+        <button class="comm-btn" data-c="rice"   onclick="ch3SetCommodity('rice',this)"><span class="cdot"></span>Rice</button>
+        <button class="comm-btn" data-c="palmoil" onclick="ch3SetCommodity('palmoil',this)"><span class="cdot"></span>Palm Oil</button>
+        <button class="comm-btn" data-c="maize"  onclick="ch3SetCommodity('maize',this)"><span class="cdot"></span>Maize</button>
+      </div>
+    </div>
+    <div class="ch3-map-wrap">
+      <div id="ch3-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;letter-spacing:0.2em;color:var(--grey-2);text-transform:uppercase;background:var(--grey-5);z-index:5;">Loading world map…</div>
+      <svg id="ch3-svg"></svg>
+      <div class="ch3-panel" id="ch3-panel">
+        <button class="ch3-panel-close" id="ch3-panel-close">✕</button>
+        <div class="ch3-panel-name" id="ch3-pname"></div>
+        <div class="ch3-panel-role" id="ch3-prole"></div>
+        <div class="ch3-panel-nums">
+          <div><div class="ch3-num-lbl">Exports</div><div class="ch3-num-val" id="ch3-pexp">—<span class="ch3-num-unit"> Mt</span></div></div>
+          <div><div class="ch3-num-lbl">Imports</div><div class="ch3-num-val" id="ch3-pimp">—<span class="ch3-num-unit"> Mt</span></div></div>
+        </div>
+        <div class="ch3-partners-lbl">Top partners</div>
+        <div id="ch3-ppartners"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;padding:0.7rem 0 0;font-size:0.68rem;color:var(--grey-2);border-top:1px solid var(--grey-4);margin-top:0.5rem;align-items:center;">
+      <span style="letter-spacing:0.06em;">Arc width = trade volume &nbsp;·&nbsp; Click any highlighted country to explore flows</span>
+      <span style="margin-left:auto;font-style:italic;">Sources: UN Comtrade · FAOSTAT 2022–23</span>
+    </div>
+  </div>
+</section>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 4 — THE PRICE OF A PLATE
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch4">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">Chapter IV — The Price of a Plate</div>
+      <h2 class="chapter-h2">For the poorest,<br>food is not a choice.<br><em>It is the choice.</em></h2>
+    </div>
+    <p class="chapter-lede">In wealthy nations, households spend 10–15% of income on food. In the most vulnerable countries, that figure exceeds 60%. Hover any bubble to see the cost of a basic food basket.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch4-vis">
+      <svg id="ch4-svg"></svg>
+    </div>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;padding:1rem 0 0;border-top:1px solid var(--grey-4);">
+      <div>
+        <div style="font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;">Region</div>
+        <div id="ch4-region-legend" style="display:flex;gap:0.8rem;flex-wrap:wrap;"></div>
+      </div>
+      <div>
+        <div style="font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;">Bubble size = affected population</div>
+        <div style="display:flex;gap:0.8rem;align-items:center;font-size:0.72rem;color:var(--grey-2);">
+          <span>● Small &lt;5M</span><span>● Medium 20M</span><span>● Large 100M+</span>
+        </div>
+      </div>
+      <div style="margin-left:auto;font-size:0.65rem;color:var(--grey-2);font-style:italic;text-align:right;">
+        Sources: FAO FIES · World Bank ICP · ILO surveys · 2022–23
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 5 — WHO GOES HUNGRY
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch5">
+  <div class="chapter-header full">
+    <div>
+      <div class="chapter-label">Chapter V — Who Goes Hungry</div>
+      <h2 class="chapter-h2">282 million faces.<br>One <em>constellation</em> of causes.</h2>
+    </div>
+  </div>
+  <div style="max-width:1400px;margin:0 auto;padding:0.5rem 5vw 0;">
+    <p class="narrative" style="margin:0 0 0;">Each dot below is one million people in acute food insecurity. Scroll through the five frames to watch them re-sort by driver — conflict, climate, economics, poverty — and finally by how many forces act on the same person simultaneously.</p>
+  </div>
+  <div class="ch5-scroll-outer" id="ch5-scroll-outer">
+    <div class="ch5-sticky" id="ch5-sticky">
+      <svg id="ch5-svg"></svg>
+      <div class="ch5-legend">
+        <div class="ch5-leg-title">Driver of hunger</div>
+        <div class="ch5-leg-row"><div class="ch5-leg-dot" style="background:var(--blue-1)"></div>Conflict &amp; fragility</div>
+        <div class="ch5-leg-row"><div class="ch5-leg-dot" style="background:var(--blue-3)"></div>Climate shock</div>
+        <div class="ch5-leg-row"><div class="ch5-leg-dot" style="background:var(--blue-2)"></div>Economic crisis</div>
+        <div class="ch5-leg-row"><div class="ch5-leg-dot" style="background:var(--blue-4)"></div>Poverty trap</div>
+        <div style="border-top:1px solid var(--grey-4);margin:0.5rem 0;"></div>
+        <div style="font-size:0.58rem;letter-spacing:0.16em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.25rem;">Scale</div>
+        <div style="display:flex;align-items:center;gap:0.4rem;font-size:0.68rem;color:var(--grey-2);">
+          <div style="width:7px;height:7px;border-radius:50%;background:var(--grey-3);flex-shrink:0;"></div>= 1 million people
+        </div>
+      </div>
+      <div class="ch5-counter">
+        <div class="ch5-counter-num" id="ch5-counter-num">282</div>
+        <div class="ch5-counter-lbl" id="ch5-counter-lbl">million in acute food insecurity</div>
+      </div>
+    </div>
+    <div class="ch5-steps" id="ch5-steps">
+      <div class="ch5-step" data-step="0">
+        <div class="ch5-card">
+          <div class="ch5-step-num">Step 1 of 5</div>
+          <div class="ch5-card-title">282 million people. One number.</div>
+          <div class="ch5-card-body">In 2023, <strong>282 million people</strong> across 59 countries faced acute food insecurity. Each dot is one million of them. Together they form a constellation of human suffering.</div>
+        </div>
+      </div>
+      <div class="ch5-step" data-step="1">
+        <div class="ch5-card right">
+          <div class="ch5-step-num">Step 2 of 5</div>
+          <div class="ch5-card-title">Conflict: the largest single driver</div>
+          <div class="ch5-card-body"><strong>135 million people</strong> — nearly half — live in countries where armed conflict is the primary cause. War destroys farms, supply chains, and markets. Hunger is a weapon.</div>
+          <div class="ch5-chips"><span class="chip chip-conflict">Conflict</span></div>
+        </div>
+      </div>
+      <div class="ch5-step" data-step="2">
+        <div class="ch5-card">
+          <div class="ch5-step-num">Step 3 of 5</div>
+          <div class="ch5-card-title">Climate shocks hit the already vulnerable</div>
+          <div class="ch5-card-body"><strong>77 million people</strong> face food insecurity primarily because of drought, flood, or extreme weather. They did least to cause climate change, yet bear the heaviest cost.</div>
+          <div class="ch5-chips"><span class="chip chip-climate">Climate shock</span></div>
+        </div>
+      </div>
+      <div class="ch5-step" data-step="3">
+        <div class="ch5-card right">
+          <div class="ch5-step-num">Step 4 of 5</div>
+          <div class="ch5-card-title">Economic shocks erase the margins</div>
+          <div class="ch5-card-body"><strong>93 million people</strong> tipped into food crisis by inflation, currency collapse, or income loss. A 20% rise in food prices is the difference between eating and not.</div>
+          <div class="ch5-chips"><span class="chip chip-economic">Economic crisis</span></div>
+        </div>
+      </div>
+      <div class="ch5-step" data-step="4">
+        <div class="ch5-card">
+          <div class="ch5-step-num">Step 5 of 5</div>
+          <div class="ch5-card-title">The same people. Multiple drivers.</div>
+          <div class="ch5-card-body">More than <strong>59% of all acutely food-insecure people</strong> face at least two simultaneous drivers. Solving one without the others is not enough.</div>
+          <div class="ch5-chips"><span class="chip chip-conflict">Conflict</span><span class="chip chip-climate">Climate</span><span class="chip chip-economic">Economic</span><span class="chip chip-poverty">Poverty</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div style="max-width:1400px;margin:0 auto;padding:0 5vw;">
+    <p class="section-footnote">Sources: FSIN Global Report on Food Crises 2023 · WFP · FAO · UNICEF · Data illustrative, based on published ranges.</p>
+  </div>
+</section>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 7 — PATHS FORWARD
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch7">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">Chapter VI — Paths Forward</div>
+      <h2 class="chapter-h2">Pull the levers.<br><em>See what changes.</em></h2>
+    </div>
+    <p class="chapter-lede">Adjust each intervention to set ambition. The model shows relative magnitude — not a forecast. No single lever is enough. The synergies between levers are where the real gains hide.</p>
+  </div>
+  <div class="chapter-body ch7-wrap">
+    <div class="ch7-presets-bar">
+      <span class="ch7-presets-lbl">Scenario</span>
+      <button class="preset-btn selected" data-preset="baseline"   onclick="ch7LoadPreset('baseline',this)">Baseline — no action</button>
+      <button class="preset-btn" data-preset="govmin"              onclick="ch7LoadPreset('govmin',this)">Government minimum</button>
+      <button class="preset-btn" data-preset="paris"               onclick="ch7LoadPreset('paris',this)">Paris-aligned</button>
+      <button class="preset-btn" data-preset="ambitious"           onclick="ch7LoadPreset('ambitious',this)">Maximum ambition</button>
+      <button class="ch7-reset"  onclick="ch7ResetAll()">↺ Reset</button>
+    </div>
+    <div class="ch7-board">
+      <div>
+        <div class="ch7-levers-title">Policy levers — drag to set ambition level</div>
+        <div id="ch7-levers-container"></div>
+      </div>
+      <div class="ch7-outcome">
+        <div class="ch7-score-card">
+          <div class="ch7-score-lbl">Projected food-insecure population, 2050</div>
+          <svg id="dial-svg" width="190" height="108" viewBox="0 0 190 108"></svg>
+          <div class="ch7-score-num" id="score-num">582</div>
+          <div class="ch7-score-unit">million people</div>
+          <div class="ch7-verdict" id="score-verdict">Trajectory: worsening</div>
+        </div>
+        <div class="ch7-breakdown">
+          <div class="ch7-card-title">Impact by lever (millions lifted)</div>
+          <div id="impact-bars"></div>
+        </div>
+        <div class="ch7-sparkline">
+          <div class="ch7-card-title">Projection 2023 → 2050</div>
+          <svg id="spark-svg" height="95" viewBox="0 0 300 95"></svg>
+          <div class="spark-legend">
+            <div class="spark-leg-item"><div style="width:16px;border-top:1.5px dashed var(--grey-3);"></div><span>No action</span></div>
+            <div class="spark-leg-item"><div style="width:16px;height:2px;background:var(--blue-2);"></div><span>Your scenario</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="section-footnote" style="margin-top:1.5rem;">Model: IFPRI IMPACT · FAO 2050 outlook · WRI Creating a Sustainable Food Future (2019) · McKinsey Global Institute. Lever interactions simplified. Illustrative model, not a policy forecast.</p>
+  </div>
+</section>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 6 — EXPLAINING FOOD INSECURITY
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch6">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">Chapter VII — Structural Explanations</div>
+      <h2 class="chapter-h2">Agricultural employment<br><em>explains most</em> food insecurity.<br>But not all of it.</h2>
+    </div>
+    <p class="chapter-lede">Grouped by income level, a hidden pattern emerges: in low-income countries food insecurity closely tracks agricultural employment. As incomes rise, the two diverge sharply — pointing to inequality, conflict, and economic shocks as the real drivers.</p>
+  </div>
+
+  <div class="chapter-body">
+    <!-- Legend from Opt A — full three-item version -->
+    <div class="agri-legend">
+      <div class="agri-leg-item">
+        <div class="agri-leg-swatch" style="background:#002960;"></div>
+        <div class="agri-leg-label"><strong>Agricultural employment share</strong> — baseline "explained" food insecurity</div>
+      </div>
+      <div class="agri-leg-item">
+        <div class="agri-leg-swatch stripe"></div>
+        <div class="agri-leg-label"><strong>Excess food insecurity</strong> — beyond what agri employment predicts</div>
+      </div>
+      <div class="agri-leg-item">
+        <div class="agri-leg-swatch" style="background:#7EC8E3; opacity:0.85;"></div>
+        <div class="agri-leg-label"><strong>Agricultural employment %</strong> — overlaid thinner bar</div>
+      </div>
+      <div class="agri-leg-item" style="margin-left:auto;">
+        <span class="agri-leg-label" style="font-style:italic;">Hover any bar for detail</span>
+      </div>
+    </div>
+
+    <!-- Sort controls — apply to all four income panels simultaneously -->
+    <div class="sort-controls">
+      <span class="sort-lbl">Sort within each group by</span>
+      <button class="sort-btn active" id="fi-sort-excess" onclick="sortFIAll('excess',this)">Excess gap ↓</button>
+      <button class="sort-btn" id="fi-sort-total"  onclick="sortFIAll('total',this)">Total food insecurity ↓</button>
+      <button class="sort-btn" id="fi-sort-agri"   onclick="sortFIAll('agri',this)">Agri employment ↓</button>
+    </div>
+
+    <div class="sm-grid" id="sm-grid"></div>
+
+    <p class="section-footnote" style="margin-top:1rem;">Sources: FAO FIES 2022 · ILO Employment by sector 2022 · World Bank income classification 2023 · Data illustrative, based on published ranges. "Excess" = food insecurity % minus agricultural employment %, floored at 0.</p>
+  </div>
+</section>
+
+<!-- Food insecurity tooltip (separate from global-tip to avoid conflicts) -->
+<div class="fi-tip" id="fi-tip">
+  <div class="fi-tip-name" id="fi-tip-name"></div>
+  <div class="fi-tip-row"><span class="fi-tip-row-label">Food insecurity</span><span class="fi-tip-row-val" id="fi-tip-fi"></span></div>
+  <div class="fi-tip-row"><span class="fi-tip-row-label">Agri employment</span><span class="fi-tip-row-val" id="fi-tip-ae"></span></div>
+  <div class="fi-tip-excess" id="fi-tip-excess"></div>
+</div>
+
+
+<!-- ══ FOOTER ══ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">How the World Eats</div>
+      <p>A data-driven charticle on the global food system — its failures, its drivers, and the interventions that could change its trajectory by 2050.</p>
+      <p class="footer-note">Visualisations built with D3.js v7 · TopoJSON · World Atlas · All data illustrative, based on published ranges from FAO, WFP, FSIN, IFPRI, WRI, and McKinsey Global Institute. This is a mock-up for educational purposes.</p>
+    </div>
+    <div>
+      <p style="font-weight:600;color:rgba(255,255,255,0.8);margin-bottom:0.8rem;">Primary sources</p>
+      <p>FAO Food Balance Sheets 2022 · FSIN Global Report on Food Crises 2023 · UN Comtrade bilateral trade data · World Bank ICP household expenditure surveys · IPCC Sixth Assessment Report · IFPRI IMPACT model projections · WRI Creating a Sustainable Food Future</p>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ SHARED TOOLTIP ══ -->
+<div class="global-tip" id="global-tip">
+  <strong id="tip-title"></strong>
+  <span id="tip-body"></span>
+  <div class="tip-basket" id="tip-basket" style="display:none"></div>
+</div>
+<script>
+// ══════════════════════════════════════════════════
+// SHARED UTILITIES
+// ══════════════════════════════════════════════════
+const tipEl = document.getElementById("global-tip");
+function showTip(e, title, body, color, basket){
+  tipEl.style.borderTopColor = color || "var(--blue-2)";
+  document.getElementById("tip-title").textContent = title;
+  document.getElementById("tip-body").textContent  = body || "";
+  const bEl = document.getElementById("tip-basket");
+  if(basket && basket.length){
+    const maxCost = Math.max(...basket.map(b=>b[1]));
+    const barColors = ["#002960","#0D5EA6","#307FBF","#7EC8E3","#C9CDD1"];
+    const total = basket.reduce((s,b)=>s+b[1],0);
+    bEl.innerHTML = '<div class="tip-basket-title">Daily food basket breakdown</div>' +
+      basket.map(([nm,cost],i)=>
+        '<div class="tip-basket-row">'+
+        '<div class="tip-basket-label">'+nm+'</div>'+
+        '<div class="tip-basket-bar-track"><div class="tip-basket-bar" style="width:'+Math.round((cost/maxCost)*100)+'%;background:'+barColors[i%barColors.length]+'"></div></div>'+
+        '<div class="tip-basket-val">$'+cost.toFixed(2)+'</div>'+
+        '</div>'
+      ).join('') +
+      '<div class="tip-basket-total">Total: $'+total.toFixed(2)+'/day</div>';
+    bEl.style.display = "block";
+  } else {
+    bEl.style.display = "none";
+  }
+  tipEl.style.opacity = 1;
+  moveTip(e);
+}
+function moveTip(e){
+  let x = e.clientX + 14, y = e.clientY - 12;
+  if(x + 270 > window.innerWidth)  x = e.clientX - 280;
+  if(y + 200 > window.innerHeight) y = e.clientY - 210;
+  tipEl.style.left = x+"px"; tipEl.style.top = y+"px";
+}
+function hideTip(){ tipEl.style.opacity = 0; }
+
+// nav progress + active link
+window.addEventListener("scroll", ()=>{
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  document.getElementById("nav-progress").style.width = pct + "%";
+  const sections = ["hero","ch1","ch2","ch3","ch4","ch5","ch7","ch6"];
+  const links = document.querySelectorAll(".nav-link");
+  sections.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    const rect = el.getBoundingClientRect();
+    if(rect.top <= 80 && rect.bottom > 80){
+      links.forEach(l => l.classList.remove("active"));
+      if(links[i-1]) links[i-1].classList.add("active");
+    }
+  });
+}, {passive:true});
+
+// ══════════════════════════════════════════════════
+// CHAPTER 1 — RADIAL FLOW DIAGRAM
+// ══════════════════════════════════════════════════
+(function(){
+  const W=820, H=660, CX=820/2, CY=660/2+15;
+  const INNER_R=78, CROP_R=138, GAP_R=155, FLOW_R=235, BLEED_R=308;
+  const G_PAD=0.014;
+
+  const crops=[
+    {id:"maize",label:"Maize",share:0.28,color:"#0D5EA6"},
+    {id:"wheat",label:"Wheat",share:0.22,color:"#002960"},
+    {id:"rice",label:"Rice",share:0.16,color:"#307FBF"},
+    {id:"soy",label:"Soybean",share:0.10,color:"#7EC8E3"},
+    {id:"sugar",label:"Sugar crops",share:0.08,color:"#5A9BC0"},
+    {id:"roots",label:"Roots & tubers",share:0.07,color:"#1A4A80"},
+    {id:"other",label:"Other crops",share:0.09,color:"#8BAFC8"},
+  ];
+  const flows=[
+    {id:"food",  label:"Direct food",        share:0.455,color:"#002960",desc:"Calories eaten directly by humans"},
+    {id:"feed",  label:"Animal feed",         share:0.310,color:"#0D5EA6",desc:"Fed to livestock — returns ~15% as meat/dairy"},
+    {id:"waste", label:"Loss & waste",        share:0.300,color:"#C01B2D",desc:"Lost or wasted — gone from the food system entirely",bleed:true},
+    {id:"fuel",  label:"Biofuel & industry",  share:0.085,color:"#307FBF",desc:"Converted to ethanol, biodiesel, or industrial starch"},
+    {id:"seed",  label:"Seed & other",        share:0.050,color:"#7EC8E3",desc:"Retained as seed stock or non-food industrial use"},
+  ];
+  const totalF = flows.reduce((s,f)=>s+f.share,0);
+  flows.forEach(f=>f.norm=f.share/totalF);
+
+  const svg = d3.select("#ch1-svg");
+  const defs = svg.append("defs");
+  const gf = defs.append("filter").attr("id","ch1-glow");
+  gf.append("feGaussianBlur").attr("stdDeviation","3").attr("result","blur");
+  const gm=gf.append("feMerge"); gm.append("feMergeNode").attr("in","blur"); gm.append("feMergeNode").attr("in","SourceGraphic");
+  const wf = defs.append("filter").attr("id","ch1-wglow");
+  wf.append("feGaussianBlur").attr("stdDeviation","7").attr("result","blur");
+  const wm=wf.append("feMerge"); wm.append("feMergeNode").attr("in","blur"); wm.append("feMergeNode").attr("in","SourceGraphic");
+
+  const bg = svg.append("g").attr("transform",`translate(${CX},${CY})`);
+  [INNER_R,CROP_R,GAP_R,FLOW_R].forEach(r=>{
+    bg.append("circle").attr("r",r).attr("fill","none").attr("stroke","#E8EAEC").attr("stroke-width","0.7");
+  });
+  for(let i=0;i<24;i++){
+    const a=(i/24)*Math.PI*2;
+    bg.append("line")
+      .attr("x1",Math.cos(a)*INNER_R).attr("y1",Math.sin(a)*INNER_R)
+      .attr("x2",Math.cos(a)*(FLOW_R+20)).attr("y2",Math.sin(a)*(FLOW_R+20))
+      .attr("stroke","#F0F2F4").attr("stroke-width","0.5");
+  }
+
+  // crop arcs
+  const arcGen = d3.arc().innerRadius(INNER_R).outerRadius(CROP_R);
+  const pieGen = d3.pie().value(d=>d.share).padAngle(G_PAD).sort(null);
+  const cropArcs = pieGen(crops);
+  const cg = svg.append("g").attr("transform",`translate(${CX},${CY})`);
+  cropArcs.forEach((d,i)=>{
+    const c=crops[i];
+    cg.append("path").attr("d",arcGen(d)).attr("fill",c.color).attr("opacity",0.82)
+      .attr("filter","url(#ch1-glow)").style("cursor","pointer")
+      .on("mouseover",function(e){ d3.select(this).attr("opacity",1); showTip(e,c.label,`${Math.round(c.share*100)}% of global calorie production`); })
+      .on("mousemove",moveTip).on("mouseout",function(){ d3.select(this).attr("opacity",0.82); hideTip(); });
+    const mid=(d.startAngle+d.endAngle)/2;
+    const lx=Math.cos(mid-Math.PI/2)*(CROP_R+14), ly=Math.sin(mid-Math.PI/2)*(CROP_R+14);
+    if(c.share>0.07){
+      cg.append("text").attr("x",lx).attr("y",ly)
+        .attr("text-anchor",lx>5?"start":lx<-5?"end":"middle")
+        .attr("dominant-baseline","middle")
+        .attr("fill",c.color).attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size","10px").attr("opacity",0.85).text(c.label);
+    }
+  });
+
+  // connectors
+  const connG = svg.append("g").attr("transform",`translate(${CX},${CY})`);
+  const flowPie = d3.pie().value(d=>d.norm).padAngle(G_PAD).sort(null);
+  const flowArcs = flowPie(flows);
+  cropArcs.forEach((ca,ci)=>{
+    flowArcs.forEach((fa,fi)=>{
+      const cm=(ca.startAngle+ca.endAngle)/2-Math.PI/2;
+      const fm=(fa.startAngle+fa.endAngle)/2-Math.PI/2;
+      connG.append("path")
+        .attr("d",`M${Math.cos(cm)*(CROP_R-4)},${Math.sin(cm)*(CROP_R-4)} Q0,0 ${Math.cos(fm)*GAP_R},${Math.sin(fm)*GAP_R}`)
+        .attr("fill","none").attr("stroke",flows[fi].color)
+        .attr("stroke-width",Math.max(0.3,crops[ci].share*flows[fi].norm*11))
+        .attr("opacity",0.07);
+    });
+  });
+
+  // flow arcs
+  const flowG = svg.append("g").attr("transform",`translate(${CX},${CY})`);
+  const flowArcGen  = d3.arc().innerRadius(GAP_R).outerRadius(FLOW_R).padAngle(G_PAD);
+  const bleedArcGen = d3.arc().innerRadius(GAP_R).outerRadius(BLEED_R).padAngle(G_PAD);
+  const rg = defs.append("radialGradient").attr("id","waste-rg").attr("cx","50%").attr("cy","50%").attr("r","50%")
+    .attr("gradientUnits","userSpaceOnUse").attr("cx",CX).attr("cy",CY).attr("r",BLEED_R);
+  rg.append("stop").attr("offset","0%").attr("stop-color","#C01B2D").attr("stop-opacity","0.9");
+  rg.append("stop").attr("offset","100%").attr("stop-color","#C01B2D").attr("stop-opacity","0.15");
+
+  flowArcs.forEach((d,i)=>{
+    const f=flows[i];
+    const isWaste=!!f.bleed;
+    const gen=isWaste?bleedArcGen:flowArcGen;
+    const path=flowG.append("path").attr("d",gen(d))
+      .attr("fill",isWaste?"url(#waste-rg)":f.color)
+      .attr("opacity",isWaste?0.7:0.78)
+      .attr("filter",isWaste?"url(#ch1-wglow)":"url(#ch1-glow)")
+      .style("cursor","pointer");
+    if(isWaste){
+      for(let p=0;p<20;p++){
+        const a=d.startAngle+(d.endAngle-d.startAngle)*(p/19)-Math.PI/2;
+        const r=BLEED_R+Math.random()*55;
+        flowG.append("circle")
+          .attr("cx",Math.cos(a+(Math.random()-0.5)*0.15)*r)
+          .attr("cy",Math.sin(a+(Math.random()-0.5)*0.15)*r)
+          .attr("r",Math.random()*5+1.5).attr("fill","#C01B2D")
+          .attr("opacity",Math.random()*0.3+0.04);
+      }
+    }
+    path.on("mouseover",function(e){ d3.select(this).attr("opacity",1); showTip(e,f.label,`${Math.round(f.share*100)}% of production — ${f.desc}`); })
+        .on("mousemove",moveTip).on("mouseout",function(){ d3.select(this).attr("opacity",isWaste?0.7:0.78); hideTip(); });
+    const mid=(d.startAngle+d.endAngle)/2;
+    const lr=isWaste?BLEED_R+18:FLOW_R+14;
+    const lx=Math.cos(mid-Math.PI/2)*lr, ly=Math.sin(mid-Math.PI/2)*lr;
+    const anchor=lx>8?"start":lx<-8?"end":"middle";
+    flowG.append("text").attr("x",lx).attr("y",ly-3).attr("text-anchor",anchor)
+      .attr("fill",f.color).attr("font-family","'Libre Baskerville',serif")
+      .attr("font-size",isWaste?"12px":"11px").attr("font-weight",isWaste?"700":"400")
+      .text(f.label);
+    flowG.append("text").attr("x",lx).attr("y",ly+10).attr("text-anchor",anchor)
+      .attr("fill",f.color).attr("opacity",0.65).attr("font-family","'Source Sans 3',sans-serif")
+      .attr("font-size","9.5px").text(`${Math.round(f.share*100)}%`);
+  });
+
+  // centre
+  const cenG=svg.append("g").attr("transform",`translate(${CX},${CY})`);
+  cenG.append("circle").attr("r",INNER_R-2).attr("fill","white").attr("stroke","#E8EAEC").attr("stroke-width","1");
+  cenG.append("text").attr("y",-20).attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px").attr("fill","var(--grey-2)").attr("letter-spacing","0.15em").text("GLOBAL CALORIES");
+  cenG.append("text").attr("y",6).attr("text-anchor","middle").attr("font-family","'Libre Baskerville',serif").attr("font-size","28px").attr("font-weight","700").attr("fill","var(--blue-1)").text("9,800");
+  cenG.append("text").attr("y",22).attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px").attr("fill","var(--grey-2)").text("trillion kcal / year");
+  cenG.append("text").attr("y",44).attr("text-anchor","middle").attr("font-family","'Libre Baskerville',serif").attr("font-style","italic").attr("font-size","10px").attr("fill","var(--blue-2)").text("enough for everyone");
+
+  // legend
+  const legEl=document.getElementById("ch1-legend");
+  [...crops.map(c=>({label:c.label,color:c.color})),...flows.map(f=>({label:f.label,color:f.color}))].forEach(item=>{
+    const div=document.createElement("div"); div.className="ch1-leg-item";
+    div.innerHTML=`<div class="ch1-leg-dot" style="background:${item.color}"></div><span>${item.label}</span>`;
+    legEl.appendChild(div);
+  });
+})();
+</script>
+<script>
+// ══════════════════════════════════════════════════
+// CHAPTER 2 — AGRICULTURAL TIMELINE
+// ══════════════════════════════════════════════════
+(function(){
+  const events=[
+    {year:-8500,label:"First cultivation",side:"R",yield:1.5,eco:1,cat:"Origins",desc:"Early Neolithic communities in the Fertile Crescent begin sowing wheat and barley. Humanity crosses from foraging to farming.",metrics:{"Yield boost":0.1,"Soil impact":0.1,"Water use":0.05,"Biodiversity loss":0.08}},
+    {year:-3500,label:"Irrigation canals",side:"L",yield:2.5,eco:2,cat:"Water",desc:"Mesopotamian and Egyptian civilisations construct canal networks, unlocking arid floodplains. Salinisation of soils begins — still plaguing Iraq and Pakistan today.",metrics:{"Yield boost":0.45,"Soil impact":0.3,"Water use":0.6,"Biodiversity loss":0.25}},
+    {year:-500,label:"Iron plough",side:"L",yield:2,eco:1.5,cat:"Mechanisation",desc:"Iron-tipped ploughs spread across Europe and Asia, enabling cultivation of heavier clay soils. Deeper tillage begins disturbing soil carbon stores.",metrics:{"Yield boost":0.35,"Soil impact":0.2,"Water use":0.08,"Biodiversity loss":0.15}},
+    {year:1701,label:"Seed drill (Tull)",side:"L",yield:2,eco:1,cat:"Mechanisation",desc:"Jethro Tull's mechanised seed drill doubles germination rates and slashes labour costs. Monoculture row farming becomes dominant.",metrics:{"Yield boost":0.3,"Soil impact":0.15,"Water use":0.1,"Biodiversity loss":0.2}},
+    {year:1840,label:"Synthetic fertilisers",side:"L",yield:3.5,eco:3,cat:"Inputs",desc:"Liebig's discovery that plants need NPK — and these can be supplied artificially — lays the groundwork for industrial agriculture. Soil microbiome diversity begins to collapse.",metrics:{"Yield boost":0.65,"Soil impact":0.5,"Water use":0.35,"Biodiversity loss":0.4}},
+    {year:1903,label:"Haber-Bosch process",side:"L",yield:5,eco:4,cat:"Inputs",desc:"Fritz Haber and Carl Bosch crack the problem of fixing atmospheric nitrogen into ammonia. This single process now sustains roughly half the world's population — and accounts for ~2% of global energy use.",metrics:{"Yield boost":1.0,"Soil impact":0.75,"Water use":0.45,"Biodiversity loss":0.7}},
+    {year:1921,label:"Synthetic pesticides",side:"L",yield:2.5,eco:3.5,cat:"Inputs",desc:"Industrial organochlorine and organophosphate pesticides dramatically reduce crop losses. Rachel Carson's 1962 Silent Spring reveals catastrophic cascade effects on non-target species.",metrics:{"Yield boost":0.5,"Soil impact":0.55,"Water use":0.2,"Biodiversity loss":0.8}},
+    {year:1945,label:"Green Revolution",side:"R",yield:5,eco:4,cat:"Breeding",desc:"Norman Borlaug develops high-yield semi-dwarf wheat. Yields in Mexico, India, and Pakistan double within a decade. An estimated billion lives saved — at the cost of genetic monocultures.",metrics:{"Yield boost":1.0,"Soil impact":0.8,"Water use":0.85,"Biodiversity loss":0.85}},
+    {year:1960,label:"Industrial livestock",side:"L",yield:3,eco:4,cat:"Systems",desc:"Confined Animal Feeding Operations become dominant. Feed conversion ratios improve — but antibiotic overuse, manure lagoons, and methane create systemic ecological debt.",metrics:{"Yield boost":0.55,"Soil impact":0.65,"Water use":0.9,"Biodiversity loss":0.6}},
+    {year:1974,label:"Drip irrigation",side:"L",yield:2,eco:1.5,cat:"Water",desc:"Israeli engineers pioneer drip irrigation — cutting water use by 30–50% vs. flood irrigation. One of the rare breakthroughs where ecological cost declined.",metrics:{"Yield boost":0.38,"Soil impact":0.1,"Water use":-0.3,"Biodiversity loss":0.05}},
+    {year:1982,label:"GM crops",side:"R",yield:3,eco:3,cat:"Genetics",desc:"Bt toxin reduces insecticide use; herbicide-resistant crops enable no-till farming. But superweeds and loss of crop diversity raise new concerns.",metrics:{"Yield boost":0.55,"Soil impact":0.4,"Water use":0.2,"Biodiversity loss":0.5}},
+    {year:1996,label:"GPS precision farming",side:"L",yield:2,eco:1.5,cat:"Technology",desc:"GPS-guided tractors and variable-rate technology allow farmers to apply inputs only where needed. A genuine ecological step — though access remains limited to wealthy nations.",metrics:{"Yield boost":0.25,"Soil impact":-0.15,"Water use":-0.1,"Biodiversity loss":-0.05}},
+    {year:2012,label:"CRISPR gene editing",side:"R",yield:3,eco:2,cat:"Genetics",desc:"CRISPR-Cas9 enables precise, affordable gene editing of crops. Disease-resistant bananas, drought-tolerant wheat, nitrogen-efficient rice. Ecological risk poorly understood.",metrics:{"Yield boost":0.5,"Soil impact":0.2,"Water use":0.15,"Biodiversity loss":0.25}},
+    {year:2020,label:"Vertical farming",side:"R",yield:2,eco:2,cat:"Systems",desc:"LED-lit indoor farms grow leafy greens year-round with 95% less water and zero pesticides — but energy consumption is enormous. Not yet a solution for staple calories.",metrics:{"Yield boost":0.3,"Soil impact":-0.2,"Water use":-0.6,"Biodiversity loss":-0.1}},
+  ];
+
+  function ecoColor(score){
+    const cols=["#002960","#307FBF","#0D5EA6","#C01B2D"];
+    return d3.interpolateRgbBasis(cols)((score-1)/3);
+  }
+
+  const W=900, MARGIN={top:36,bottom:52,left:18,right:18};
+  const spineX=W/2, ROW_H=64;
+  const H=events.length*ROW_H+MARGIN.top+MARGIN.bottom;
+
+  const timeScale=d3.scaleLinear().domain([d3.min(events,e=>e.year),d3.max(events,e=>e.year)+10]).range([MARGIN.top,H-MARGIN.bottom]);
+  const yieldScale=d3.scaleLinear().domain([0,5]).range([0,152]);
+  const thickScale=d3.scaleLinear().domain([0,5]).range([2,20]);
+
+  const svgEl=document.getElementById("ch2-svg");
+  svgEl.setAttribute("height",H);
+  svgEl.setAttribute("viewBox",`0 0 ${W} ${H}`);
+
+  const svg=d3.select("#ch2-svg");
+  svg.append("rect").attr("width",W).attr("height",H).attr("fill","white");
+
+  // scan lines
+  for(let y=0;y<H;y+=4){svg.append("line").attr("x1",0).attr("y1",y).attr("x2",W).attr("y2",y).attr("stroke","#F8F9FA").attr("stroke-width",1);}
+
+  // era bands
+  [{y1:-9000,y2:0,fill:"#FAFBFC"},{y1:0,y2:1900,fill:"#F8F9FB"},{y1:1900,y2:1970,fill:"#F5F7FA"},{y1:1970,y2:2030,fill:"#F2F5F9"}].forEach(era=>{
+    const yt=timeScale(era.y1), yb=timeScale(era.y2);
+    svg.append("rect").attr("x",0).attr("y",yt).attr("width",W).attr("height",yb-yt).attr("fill",era.fill);
+  });
+
+  // defs
+  const defs=svg.append("defs");
+  const sg=defs.append("linearGradient").attr("id","ch2-spine-grad").attr("gradientUnits","userSpaceOnUse").attr("x1",spineX).attr("y1",MARGIN.top).attr("x2",spineX).attr("y2",H-MARGIN.bottom);
+  sg.append("stop").attr("offset","0%").attr("stop-color","#C8E6F5").attr("stop-opacity","0.5");
+  sg.append("stop").attr("offset","50%").attr("stop-color","#0D5EA6").attr("stop-opacity","1");
+  sg.append("stop").attr("offset","100%").attr("stop-color","#C01B2D").attr("stop-opacity","0.8");
+
+  // spine
+  svg.append("line").attr("x1",spineX).attr("y1",MARGIN.top).attr("x2",spineX).attr("y2",H-MARGIN.bottom)
+    .attr("stroke","url(#ch2-spine-grad)").attr("stroke-width",3);
+
+  // tick years
+  [-8000,-4000,-2000,0,500,1000,1500,1700,1800,1850,1900,1950,2000,2020].forEach(y=>{
+    const ty=timeScale(y);
+    svg.append("line").attr("x1",spineX-5).attr("y1",ty).attr("x2",spineX+5).attr("y2",ty).attr("stroke","#C9CDD1").attr("stroke-width",1);
+    svg.append("text").attr("x",spineX).attr("y",ty).attr("text-anchor","middle").attr("dominant-baseline","middle")
+      .attr("fill","#C9CDD1").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","7px")
+      .text(y<0?`${Math.abs(y)} BC`:y);
+  });
+
+  // glow filter
+  const gf=defs.append("filter").attr("id","ch2-glow");
+  gf.append("feGaussianBlur").attr("stdDeviation","2.5").attr("result","blur");
+  const gm=gf.append("feMerge"); gm.append("feMergeNode").attr("in","blur"); gm.append("feMergeNode").attr("in","SourceGraphic");
+
+  // branches
+  events.forEach(e=>{
+    const ty=timeScale(e.year);
+    const col=ecoColor(e.eco);
+    const thick=thickScale(e.yield);
+    const len=yieldScale(e.yield);
+    const isLeft=e.side==="L";
+    const dir=isLeft?-1:1;
+    const bx=spineX+dir*len;
+    const halfT=thick/2;
+    const tipW=Math.max(1,thick*0.12);
+
+    const g=svg.append("g").style("cursor","pointer");
+
+    // tapered branch
+    g.append("polygon")
+      .attr("points",`${spineX},${ty-halfT} ${spineX},${ty+halfT} ${bx},${ty+tipW} ${bx},${ty-tipW}`)
+      .attr("fill",col).attr("opacity",0.82).attr("filter","url(#ch2-glow)");
+
+    // tip dot
+    g.append("circle").attr("cx",bx).attr("cy",ty).attr("r",tipW+1.5).attr("fill",col).attr("opacity",0.9);
+
+    // secondary fronds for major events
+    if(e.yield>=4){
+      [1,2].forEach(f=>{
+        const fy=ty+dir*f*12, flen=len*(0.32-f*0.07), fbx=spineX+dir*flen;
+        g.append("line").attr("x1",spineX).attr("y1",fy).attr("x2",fbx).attr("y2",fy)
+          .attr("stroke",col).attr("stroke-width",Math.max(2,thick*0.28)).attr("opacity",0.28).attr("stroke-linecap","round");
+      });
+    }
+
+    // year label
+    const yrTxt=e.year<0?`${Math.abs(e.year).toLocaleString()} BC`:`${e.year}`;
+    const yx=isLeft?spineX+8:spineX-8;
+    g.append("text").attr("x",yx).attr("y",ty-thick/2-2).attr("text-anchor",isLeft?"start":"end")
+      .attr("fill","var(--grey-3)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","7.5px").text(yrTxt);
+
+    // event name
+    const lx=isLeft?bx-8:bx+8;
+    g.append("text").attr("x",lx).attr("y",ty-1).attr("text-anchor",isLeft?"end":"start")
+      .attr("dominant-baseline","middle").attr("fill",col)
+      .attr("font-family","'Libre Baskerville',serif").attr("font-size","10.5px")
+      .attr("font-style",e.eco>=3.5?"italic":"normal").text(e.label);
+
+    // category tag
+    g.append("text").attr("x",lx).attr("y",ty+11).attr("text-anchor",isLeft?"end":"start")
+      .attr("fill",col).attr("opacity",0.42).attr("font-family","'Source Sans 3',sans-serif")
+      .attr("font-size","7px").attr("letter-spacing","0.1em").text(e.cat.toUpperCase());
+
+    // hit area + tooltip
+    g.append("rect")
+      .attr("x",isLeft?bx-20:spineX).attr("y",ty-30).attr("width",len+20).attr("height",60)
+      .attr("fill","transparent")
+      .on("mouseover",function(ev){
+        g.selectAll("polygon,circle").attr("opacity",1);
+        const yrDisp=e.year<0?`${Math.abs(e.year).toLocaleString()} BC`:`c. ${e.year}`;
+        showTip(ev,`${e.label} · ${yrDisp}`,e.desc,col);
+      })
+      .on("mousemove",moveTip)
+      .on("mouseout",function(){
+        g.selectAll("polygon").attr("opacity",0.82);
+        g.selectAll("circle").attr("opacity",0.9);
+        hideTip();
+      });
+  });
+
+  // legend
+  svg.append("text").attr("x",W-16).attr("y",MARGIN.top+12).attr("text-anchor","end")
+    .attr("fill","var(--grey-2)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9px").attr("letter-spacing","0.1em")
+    .text("← PRODUCTION  |  GENETIC →");
+  svg.append("text").attr("x",16).attr("y",MARGIN.top+12).attr("text-anchor","start")
+    .attr("fill","var(--blue-3)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px")
+    .text("Branch width = yield impact  ·  Colour = ecological cost (blue→red)");
+})();
+</script>
+<script>
+// ══════════════════════════════════════════════════
+// CHAPTER 3 — FLAT WORLD MAP TRADE FLOWS
+// ══════════════════════════════════════════════════
+(function(){
+  const commodities={
+    wheat:{color:"#002960",flows:[["RUS","EGY",10.5],["RUS","TUR",8.2],["RUS","BGD",4.1],["RUS","NGA",3.2],["USA","MEX",4.8],["USA","PHL",3.2],["USA","JPN",2.8],["CAN","IDN",2.4],["CAN","BGD",1.8],["AUS","IDN",3.6],["AUS","VNM",2.1],["FRA","EGY",2.8],["FRA","DZA",4.2],["FRA","MAR",2.6],["UKR","EGY",5.2],["UKR","IDN",2.4],["UKR","BGD",2.0]],
+      countryData:{"RUS":{name:"Russia",exports:42.8,imports:0.4,role:"Major exporter",partners:[["Egypt",10.5],["Turkey",8.2],["Bangladesh",4.1],["Nigeria",3.2]]},"USA":{name:"United States",exports:21.4,imports:3.2,role:"Major exporter",partners:[["Mexico",4.8],["Philippines",3.2],["Japan",2.8],["Nigeria",2.1]]},"AUS":{name:"Australia",exports:21.8,imports:0.3,role:"Major exporter",partners:[["Indonesia",3.6],["Vietnam",2.1],["Philippines",1.8],["Malaysia",1.2]]},"FRA":{name:"France",exports:19.4,imports:2.1,role:"Major exporter",partners:[["Algeria",4.2],["Egypt",2.8],["Morocco",2.6],["Nigeria",1.4]]},"UKR":{name:"Ukraine",exports:16.5,imports:0.2,role:"Major exporter",partners:[["Egypt",5.2],["Indonesia",2.4],["Bangladesh",2.0],["Tunisia",1.4]]},"EGY":{name:"Egypt",exports:0.6,imports:22.4,role:"Major importer",partners:[["Russia",10.5],["Ukraine",5.2],["France",2.8],["USA",1.8]]},"IDN":{name:"Indonesia",exports:0.2,imports:11.4,role:"Major importer",partners:[["Australia",3.6],["Canada",2.4],["Ukraine",2.4],["Argentina",1.6]]}}},
+    soy:{color:"#0D5EA6",flows:[["BRA","CHN",48.5],["BRA","DEU",8.4],["BRA","MEX",2.8],["USA","CHN",26.4],["USA","MEX",5.2],["USA","IDN",3.4],["ARG","CHN",6.2],["ARG","DEU",4.8],["ARG","IDN",2.4]],
+      countryData:{"BRA":{name:"Brazil",exports:88.4,imports:0.8,role:"Dominant exporter",partners:[["China",48.5],["Germany",8.4],["Mexico",2.8],["Indonesia",2.2]]},"USA":{name:"United States",exports:54.9,imports:1.2,role:"Major exporter",partners:[["China",26.4],["Mexico",5.2],["Germany",2.8],["Indonesia",3.4]]},"ARG":{name:"Argentina",exports:32.6,imports:0.4,role:"Major exporter",partners:[["China",6.2],["Germany",4.8],["Indonesia",2.4],["Vietnam",1.8]]},"CHN":{name:"China",exports:1.2,imports:98.4,role:"Dominant importer",partners:[["Brazil",48.5],["USA",26.4],["Argentina",6.2],["Paraguay",2.4]]}}},
+    rice:{color:"#307FBF",flows:[["IND","BGD",4.8],["IND","SEN",2.2],["IND","IDN",1.8],["IND","KEN",1.2],["THA","CHN",4.2],["THA","IRQ",2.6],["THA","NGA",3.2],["VNM","CHN",3.8],["VNM","PHL",2.2],["PAK","CHN",2.8],["PAK","KEN",1.2]],
+      countryData:{"IND":{name:"India",exports:22.4,imports:0.4,role:"Dominant exporter",partners:[["Bangladesh",4.8],["Senegal",2.2],["Indonesia",1.8],["Kenya",1.2]]},"THA":{name:"Thailand",exports:8.1,imports:0.6,role:"Major exporter",partners:[["China",4.2],["Nigeria",3.2],["Iraq",2.6],["USA",1.8]]},"VNM":{name:"Vietnam",exports:7.2,imports:0.3,role:"Major exporter",partners:[["China",3.8],["Philippines",2.2],["Ghana",1.6],["Indonesia",1.4]]}}},
+    palmoil:{color:"#1A4A80",flows:[["IDN","CHN",7.2],["IDN","IND",6.8],["IDN","NLD",4.2],["IDN","PAK",2.8],["MYS","CHN",4.8],["MYS","IND",4.2],["MYS","NLD",2.4],["MYS","PAK",1.8]],
+      countryData:{"IDN":{name:"Indonesia",exports:28.2,imports:0.4,role:"Dominant exporter",partners:[["China",7.2],["India",6.8],["Netherlands",4.2],["Pakistan",2.8]]},"MYS":{name:"Malaysia",exports:18.4,imports:0.8,role:"Major exporter",partners:[["China",4.8],["India",4.2],["Netherlands",2.4],["Pakistan",1.8]]},"CHN":{name:"China",exports:0.6,imports:14.4,role:"Major importer",partners:[["Indonesia",7.2],["Malaysia",4.8],["Thailand",1.2],["Colombia",0.4]]}}},
+    maize:{color:"#5A9BC0",flows:[["USA","MEX",16.4],["USA","JPN",10.8],["USA","KOR",5.6],["USA","EGY",4.2],["BRA","EGY",5.6],["BRA","VNM",4.2],["BRA","IRN",4.8],["ARG","VNM",5.2],["ARG","EGY",4.4],["UKR","CHN",7.8],["UKR","DEU",4.4],["UKR","EGY",3.2]],
+      countryData:{"USA":{name:"United States",exports:54.2,imports:1.4,role:"Major exporter",partners:[["Mexico",16.4],["Japan",10.8],["Korea",5.6],["Egypt",4.2]]},"BRA":{name:"Brazil",exports:43.6,imports:0.8,role:"Major exporter",partners:[["Egypt",5.6],["Iran",4.8],["Vietnam",4.2],["Japan",3.2]]},"UKR":{name:"Ukraine",exports:24.4,imports:0.2,role:"Major exporter",partners:[["China",7.8],["Germany",4.4],["Egypt",3.2],["Turkey",2.8]]}}}
+  };
+  const centroids={"RUS":[60,61],"USA":[-100,40],"CAN":[-96,58],"AUS":[134,-27],"FRA":[2,46],"UKR":[31,49],"EGY":[30,27],"IDN":[118,-5],"BGD":[90,23],"TUR":[35,39],"NGA":[8,9],"BRA":[-52,-10],"ARG":[-65,-35],"CHN":[104,35],"IND":[80,22],"VNM":[106,16],"THA":[101,15],"PAK":[69,30],"MEX":[-102,23],"JPN":[138,36],"KOR":[128,37],"PHL":[122,12],"MYS":[110,3],"IRN":[53,32],"DEU":[10,51],"NLD":[5,52],"IRQ":[44,33],"SEN":[-14,14],"GHA":[-1,8],"DZA":[3,28],"MAR":[-5,32],"TUN":[9,34],"KEN":[38,-1],"COL":[-74,4]};
+  const idMap={"004":"AFG","012":"DZA","036":"AUS","076":"BRA","050":"BGD","204":"BEN","120":"CMR","124":"CAN","152":"CHL","170":"COL","192":"CUB","384":"CIV","818":"EGY","250":"FRA","288":"GHA","356":"IND","360":"IDN","368":"IRQ","364":"IRN","380":"ITA","392":"JPN","400":"JOR","404":"KEN","410":"KOR","418":"LAO","484":"MEX","504":"MAR","524":"NPL","528":"NLD","566":"NGA","586":"PAK","591":"PAN","608":"PHL","616":"POL","620":"PRT","682":"SAU","686":"SEN","710":"ZAF","724":"ESP","764":"THA","788":"TUN","792":"TUR","800":"UGA","804":"UKR","784":"ARE","826":"GBR","840":"USA","858":"URY","704":"VNM","276":"DEU","156":"CHN","643":"RUS","300":"GRC","056":"BEL","040":"AUT"};
+  const nameMap={"RUS":"Russia","USA":"United States","CAN":"Canada","AUS":"Australia","FRA":"France","UKR":"Ukraine","EGY":"Egypt","IDN":"Indonesia","BGD":"Bangladesh","TUR":"Turkey","NGA":"Nigeria","BRA":"Brazil","ARG":"Argentina","CHN":"China","IND":"India","VNM":"Vietnam","THA":"Thailand","PAK":"Pakistan","MEX":"Mexico","JPN":"Japan","KOR":"South Korea","PHL":"Philippines","MYS":"Malaysia","IRN":"Iran","DEU":"Germany","NLD":"Netherlands","IRQ":"Iraq","SEN":"Senegal","GHA":"Ghana","DZA":"Algeria","MAR":"Morocco","TUN":"Tunisia","KEN":"Kenya","COL":"Colombia"};
+
+  let currentComm="wheat", selectedCountry=null, worldData=null, W, H;
+  let dashOffset=0, animId=null;
+
+  const svgEl=document.getElementById("ch3-svg");
+  const svg=d3.select("#ch3-svg");
+  const proj=d3.geoEquirectangular().precision(0.2);
+  const path=d3.geoPath().projection(proj);
+
+  const starsLayer=svg.append("g");
+  const gratLayer=svg.append("g");
+  const landLayer=svg.append("g");
+  const arcLayer=svg.append("g");
+  const dotLayer=svg.append("g");
+  const lblLayer=svg.append("g");
+
+  function resize(){
+    W=svgEl.parentElement.clientWidth;
+    H=Math.max(Math.round(W*0.44),300);
+    svgEl.setAttribute("width",W); svgEl.setAttribute("height",H);
+    svgEl.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    proj.scale(W/(2*Math.PI)).translate([W/2,H/2]);
+    drawStars(); drawGrat();
+    if(worldData) render();
+  }
+
+  function seededRng(seed){ return ()=>{ seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return(seed>>>0)/0xFFFFFFFF; }; }
+  function drawStars(){
+    starsLayer.selectAll("*").remove();
+    starsLayer.append("rect").attr("width",W).attr("height",H).attr("fill","#060A14");
+    // milky way
+    const defs=svg.select("defs").empty()?svg.append("defs"):svg.select("defs");
+    if(defs.select("#ch3-mw").empty()){
+      const mw=defs.append("linearGradient").attr("id","ch3-mw").attr("gradientUnits","userSpaceOnUse").attr("x1",0).attr("y1",H*0.3).attr("x2",W).attr("y2",H*0.7);
+      mw.append("stop").attr("offset","0%").attr("stop-color","#06122A").attr("stop-opacity","0");
+      mw.append("stop").attr("offset","45%").attr("stop-color","#0A1E40").attr("stop-opacity","0.5");
+      mw.append("stop").attr("offset","100%").attr("stop-color","#06122A").attr("stop-opacity","0");
+    }
+    starsLayer.append("rect").attr("width",W).attr("height",H).attr("fill","url(#ch3-mw)");
+    const rng=seededRng(42);
+    for(let i=0;i<1600;i++){
+      const x=rng()*W, y=rng()*H;
+      const r=rng()<0.04?rng()*1.4+0.7:rng()<0.2?rng()*0.7+0.25:rng()*0.35+0.08;
+      starsLayer.append("circle").attr("cx",x).attr("cy",y).attr("r",r)
+        .attr("fill",rng()<0.12?"#FFE8C0":rng()<0.08?"#C0D8FF":"#ffffff")
+        .attr("opacity",rng()*0.45+0.18);
+    }
+  }
+  function drawGrat(){
+    gratLayer.selectAll("*").remove();
+    const grat=d3.geoGraticule().step([30,30]);
+    gratLayer.append("path").datum(grat()).attr("d",path).attr("fill","none").attr("stroke","#0A0E1A").attr("stroke-width","0.5");
+  }
+
+  function render(){
+    const color=commodities[currentComm].color;
+    const flows=commodities[currentComm].flows;
+    const activeCodes=new Set();
+    flows.forEach(([e,i])=>{activeCodes.add(e);activeCodes.add(i);});
+    const countries_feat=topojson.feature(worldData,worldData.objects.countries);
+    const borders=topojson.mesh(worldData,worldData.objects.countries,(a,b)=>a!==b);
+
+    landLayer.selectAll("*").remove();
+    landLayer.selectAll(".country").data(countries_feat.features).enter().append("path")
+      .attr("class","country").attr("d",path)
+      .attr("fill",d=>{
+        const iso=idMap[String(d.id).padStart(3,"0")];
+        if(iso===selectedCountry) return hexA(color,0.22);
+        if(activeCodes.has(iso)) return "#12182A";
+        return "#0A0E1A";
+      })
+      .attr("stroke","#0D1220").attr("stroke-width","0.35")
+      .style("cursor",d=>{const iso=idMap[String(d.id).padStart(3,"0")];return activeCodes.has(iso)?"pointer":"default";})
+      .on("mouseover",function(ev,d){
+        const iso=idMap[String(d.id).padStart(3,"0")];
+        if(!activeCodes.has(iso))return;
+        if(iso!==selectedCountry) d3.select(this).attr("fill",hexA(color,0.14));
+        const nm=nameMap[iso];
+        if(nm){ const cd=commodities[currentComm].countryData[iso]; showTip(ev,nm,cd?`${cd.role} · click to explore`:"Click to explore trade flows",color); }
+      })
+      .on("mousemove",moveTip)
+      .on("mouseout",function(ev,d){
+        const iso=idMap[String(d.id).padStart(3,"0")];
+        if(iso!==selectedCountry) d3.select(this).attr("fill",activeCodes.has(iso)?"#12182A":"#0A0E1A");
+        hideTip();
+      })
+      .on("click",function(ev,d){
+        const iso=idMap[String(d.id).padStart(3,"0")];
+        if(!activeCodes.has(iso))return;
+        if(selectedCountry===iso){selectedCountry=null;hidePanel();}
+        else{selectedCountry=iso;showPanel(iso,color);}
+        render();
+      });
+    landLayer.append("path").datum(borders).attr("d",path).attr("fill","none").attr("stroke","#0D1220").attr("stroke-width","0.35");
+
+    // arcs
+    arcLayer.selectAll("*").remove();
+    const maxVol=d3.max(flows,d=>d[2]);
+    const wSc=d3.scaleSqrt().domain([0,maxVol]).range([0.5,7]);
+    flows.forEach(([eISO,iISO,vol])=>{
+      const ec=centroids[eISO],ic=centroids[iISO];
+      if(!ec||!ic)return;
+      const isHl=selectedCountry&&(eISO===selectedCountry||iISO===selectedCountry);
+      const isDim=selectedCountry&&!isHl;
+      const w=wSc(vol);
+      if(isHl){arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none").attr("stroke",color).attr("stroke-width",w*3.5).attr("stroke-linecap","round").attr("opacity",0.08);}
+      arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none")
+        .attr("stroke",color).attr("stroke-width",isHl?w*1.6:w).attr("stroke-linecap","round")
+        .attr("opacity",isDim?0.04:isHl?0.88:0.28).attr("class",isHl?"arc-hl":"");
+    });
+
+    // dots
+    dotLayer.selectAll("*").remove(); lblLayer.selectAll("*").remove();
+    activeCodes.forEach(iso=>{
+      const coord=centroids[iso];if(!coord)return;
+      const px=proj(coord);if(!px)return;
+      const isSel=iso===selectedCountry;
+      const isMaj=(commodities[currentComm].countryData[iso]||{}).exports>15;
+      if(isSel){dotLayer.append("circle").attr("cx",px[0]).attr("cy",px[1]).attr("r",10).attr("fill","none").attr("stroke",color).attr("stroke-width","0.8").attr("opacity",0.3);}
+      dotLayer.append("circle").attr("cx",px[0]).attr("cy",px[1]).attr("r",isSel?5.5:isMaj?3.5:2.2)
+        .attr("fill",isSel?color:hexA(color,0.8)).attr("stroke",isSel?"white":"none").attr("stroke-width","1.5").attr("opacity",0.9);
+      const nm=nameMap[iso];
+      if(nm&&(isSel||isMaj)){
+        const lx=px[0]+(px[0]>W/2?-7:7), anchor=px[0]>W/2?"end":"start";
+        lblLayer.append("text").attr("x",lx).attr("y",px[1]-(isSel?9:6)).attr("text-anchor",anchor)
+          .attr("fill",isSel?color:hexA(color,0.7)).attr("font-family","'Source Sans 3',sans-serif")
+          .attr("font-size",isSel?"11px":"8.5px").text(nm);
+      }
+    });
+  }
+
+  function animate(){
+    dashOffset+=1.2;
+    arcLayer.selectAll(".arc-hl").each(function(){
+      const el=d3.select(this);const len=this.getTotalLength()||300;
+      const dash=Math.min(len*0.16,48);
+      el.attr("stroke-dasharray",`${dash} ${len}`).attr("stroke-dashoffset",-dashOffset%len);
+    });
+    animId=requestAnimationFrame(animate);
+  }
+
+  function showPanel(iso,color){
+    const data=commodities[currentComm].countryData[iso];
+    const panel=document.getElementById("ch3-panel");
+    panel.style.borderLeftColor=color;
+    document.getElementById("ch3-pname").textContent=data?data.name:nameMap[iso]||iso;
+    const cl=currentComm==="palmoil"?"Palm Oil":currentComm.charAt(0).toUpperCase()+currentComm.slice(1);
+    document.getElementById("ch3-prole").textContent=data?`${data.role} · ${cl}`:`Trade participant · ${cl}`;
+    document.getElementById("ch3-pexp").innerHTML=data?`${data.exports}<span class="ch3-num-unit"> Mt</span>`:"—";
+    document.getElementById("ch3-pimp").innerHTML=data?`${data.imports}<span class="ch3-num-unit"> Mt</span>`:"—";
+    const pl=document.getElementById("ch3-ppartners"); pl.innerHTML="";
+    if(data){const mx=d3.max(data.partners,p=>p[1]);data.partners.forEach(([nm,vol])=>{const pct=(vol/mx)*100;const row=document.createElement("div");row.className="ch3-p-row";row.innerHTML=`<span>${nm}</span><div class="ch3-p-bar-wrap"><div class="ch3-p-bar" style="width:${pct}%;background:${color};opacity:0.6"></div></div><span class="ch3-p-vol">${vol}Mt</span>`;pl.appendChild(row);});}
+    panel.classList.add("visible");
+  }
+  function hidePanel(){document.getElementById("ch3-panel").classList.remove("visible");}
+  document.getElementById("ch3-panel-close").addEventListener("click",()=>{selectedCountry=null;hidePanel();render();});
+
+  window.ch3SetCommodity=function(c,btn){
+    document.querySelectorAll(".comm-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active"); currentComm=c; selectedCountry=null; hidePanel(); render();
+  };
+
+  function hexA(hex,a){return hex+Math.round(a*255).toString(16).padStart(2,"0");}
+
+  window.addEventListener("resize",()=>{clearTimeout(ch3ResizeT);ch3ResizeT=setTimeout(()=>{resize();},150);});
+  let ch3ResizeT;
+
+  fetch("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+    .then(r=>r.json()).then(w=>{
+      worldData=w;
+      const ld=document.getElementById("ch3-loading");
+      ld.style.opacity=0; setTimeout(()=>ld.style.display="none",400);
+      resize(); animate();
+    }).catch(()=>{document.getElementById("ch3-loading").textContent="Map data unavailable";});
+
+  resize();
+})();
+</script>
+<script>
+// ══════════════════════════════════════════════════
+// CHAPTER 4 — SCATTER TERRAIN
+// ══════════════════════════════════════════════════
+(function(){
+  const countries=[
+    {n:"Nigeria",f:"🇳🇬",r:"Sub-Saharan Africa",x:46,y:59,pop:94,basket:1.12,items:[["Grains",0.38],["Legumes",0.22],["Vegetables",0.18],["Protein",0.20],["Other",0.14]]},
+    {n:"Ethiopia",f:"🇪🇹",r:"Sub-Saharan Africa",x:55,y:63,pop:66,basket:0.88,items:[["Grains",0.44],["Legumes",0.24],["Vegetables",0.12],["Protein",0.06],["Other",0.02]]},
+    {n:"DRC",f:"🇨🇩",r:"Sub-Saharan Africa",x:72,y:68,pop:60,basket:0.74,items:[["Grains",0.30],["Legumes",0.18],["Vegetables",0.14],["Protein",0.08],["Other",0.04]]},
+    {n:"Kenya",f:"🇰🇪",r:"Sub-Saharan Africa",x:38,y:52,pop:22,basket:1.04,items:[["Grains",0.36],["Legumes",0.20],["Vegetables",0.22],["Protein",0.16],["Other",0.10]]},
+    {n:"Tanzania",f:"🇹🇿",r:"Sub-Saharan Africa",x:42,y:57,pop:28,basket:0.92,items:[["Grains",0.38],["Legumes",0.22],["Vegetables",0.16],["Protein",0.10],["Other",0.06]]},
+    {n:"Mozambique",f:"🇲🇿",r:"Sub-Saharan Africa",x:61,y:65,pop:20,basket:0.78,items:[["Grains",0.36],["Legumes",0.20],["Vegetables",0.14],["Protein",0.06],["Other",0.02]]},
+    {n:"Bangladesh",f:"🇧🇩",r:"South Asia",x:30,y:54,pop:52,basket:1.06,items:[["Grains",0.48],["Legumes",0.18],["Vegetables",0.20],["Protein",0.12],["Other",0.08]]},
+    {n:"India",f:"🇮🇳",r:"South Asia",x:28,y:48,pop:370,basket:1.14,items:[["Grains",0.42],["Legumes",0.22],["Vegetables",0.24],["Protein",0.16],["Other",0.10]]},
+    {n:"Pakistan",f:"🇵🇰",r:"South Asia",x:38,y:52,pop:88,basket:1.02,items:[["Grains",0.44],["Legumes",0.16],["Vegetables",0.22],["Protein",0.14],["Other",0.06]]},
+    {n:"Indonesia",f:"🇮🇩",r:"Southeast Asia",x:18,y:42,pop:48,basket:1.32,items:[["Grains",0.36],["Legumes",0.16],["Vegetables",0.28],["Protein",0.28],["Other",0.24]]},
+    {n:"Philippines",f:"🇵🇭",r:"Southeast Asia",x:22,y:44,pop:26,basket:1.38,items:[["Grains",0.34],["Legumes",0.14],["Vegetables",0.30],["Protein",0.32],["Other",0.28]]},
+    {n:"Egypt",f:"🇪🇬",r:"M. East & N. Africa",x:26,y:40,pop:28,basket:1.44,items:[["Grains",0.38],["Legumes",0.18],["Vegetables",0.30],["Protein",0.30],["Other",0.28]]},
+    {n:"Yemen",f:"🇾🇪",r:"M. East & N. Africa",x:68,y:66,pop:21,basket:0.82,items:[["Grains",0.40],["Legumes",0.18],["Vegetables",0.14],["Protein",0.06],["Other",0.04]]},
+    {n:"Syria",f:"🇸🇾",r:"M. East & N. Africa",x:60,y:58,pop:14,basket:0.86,items:[["Grains",0.38],["Legumes",0.16],["Vegetables",0.16],["Protein",0.10],["Other",0.06]]},
+    {n:"Brazil",f:"🇧🇷",r:"Latin America",x:14,y:28,pop:34,basket:2.10,items:[["Grains",0.30],["Legumes",0.20],["Vegetables",0.40],["Protein",0.70],["Other",0.50]]},
+    {n:"Venezuela",f:"🇻🇪",r:"Latin America",x:48,y:55,pop:16,basket:1.02,items:[["Grains",0.34],["Legumes",0.20],["Vegetables",0.22],["Protein",0.18],["Other",0.08]]},
+    {n:"Haiti",f:"🇭🇹",r:"Latin America",x:62,y:64,pop:8,basket:0.84,items:[["Grains",0.36],["Legumes",0.22],["Vegetables",0.14],["Protein",0.08],["Other",0.04]]},
+    {n:"United States",f:"🇺🇸",r:"High income",x:6,y:10,pop:38,basket:7.20,items:[["Grains",0.60],["Legumes",0.20],["Vegetables",1.40],["Protein",3.20],["Other",1.80]]},
+    {n:"Germany",f:"🇩🇪",r:"High income",x:3,y:9,pop:2,basket:6.80,items:[["Grains",0.55],["Legumes",0.18],["Vegetables",1.38],["Protein",3.10],["Other",1.59]]},
+    {n:"Japan",f:"🇯🇵",r:"High income",x:5,y:14,pop:8,basket:6.10,items:[["Grains",0.62],["Legumes",0.24],["Vegetables",1.52],["Protein",2.80],["Other",0.92]]},
+    {n:"UK",f:"🇬🇧",r:"High income",x:4,y:8,pop:3,basket:6.40,items:[["Grains",0.52],["Legumes",0.16],["Vegetables",1.32],["Protein",3.00],["Other",1.40]]},
+    {n:"Turkey",f:"🇹🇷",r:"High income",x:10,y:30,pop:8,basket:2.80,items:[["Grains",0.42],["Legumes",0.22],["Vegetables",0.64],["Protein",0.92],["Other",0.60]]},
+    {n:"China",f:"🇨🇳",r:"High income",x:8,y:20,pop:112,basket:3.20,items:[["Grains",0.40],["Legumes",0.22],["Vegetables",0.82],["Protein",1.20],["Other",0.56]]},
+  ];
+  const regionColors={"Sub-Saharan Africa":"#002960","South Asia":"#0D5EA6","Southeast Asia":"#307FBF","M. East & N. Africa":"#7EC8E3","Latin America":"#5A9BC0","High income":"#C9CDD1"};
+  const basketColors={"Grains":"#002960","Legumes":"#0D5EA6","Vegetables":"#307FBF","Protein":"#7EC8E3","Other":"#C9CDD1"};
+
+  const svgEl=document.getElementById("ch4-svg");
+  const svg=d3.select("#ch4-svg");
+  const MARGIN={top:46,right:55,bottom:68,left:68};
+  let W,H,IW,IH,xSc,ySc,rSc;
+
+  function resize(){
+    W=svgEl.parentElement.clientWidth; H=Math.max(Math.round(W*0.62),460);
+    IW=W-MARGIN.left-MARGIN.right; IH=H-MARGIN.top-MARGIN.bottom;
+    svgEl.setAttribute("viewBox",`0 0 ${W} ${H}`);
+    svgEl.setAttribute("width",W); svgEl.setAttribute("height",H);
+    xSc=d3.scaleLinear().domain([0,80]).range([0,IW]).nice();
+    ySc=d3.scaleLinear().domain([0,75]).range([IH,0]).nice();
+    rSc=d3.scaleSqrt().domain([0,d3.max(countries,d=>d.pop)]).range([4,W<600?30:46]);
+    render();
+  }
+
+  function render(){
+    svg.selectAll("*").remove();
+    const defs=svg.append("defs");
+    const dzG=defs.append("radialGradient").attr("id","ch4-dz").attr("cx",MARGIN.left+IW).attr("cy",MARGIN.top).attr("r",IW*0.7).attr("gradientUnits","userSpaceOnUse");
+    dzG.append("stop").attr("offset","0%").attr("stop-color","#C01B2D").attr("stop-opacity","0.09");
+    dzG.append("stop").attr("offset","100%").attr("stop-color","#C01B2D").attr("stop-opacity","0");
+    const saG=defs.append("radialGradient").attr("id","ch4-sa").attr("cx",MARGIN.left).attr("cy",MARGIN.top+IH).attr("r",IW*0.5).attr("gradientUnits","userSpaceOnUse");
+    saG.append("stop").attr("offset","0%").attr("stop-color","#006B3C").attr("stop-opacity","0.05");
+    saG.append("stop").attr("offset","100%").attr("stop-color","#006B3C").attr("stop-opacity","0");
+    const bsF=defs.append("filter").attr("id","ch4-shadow");
+    bsF.append("feDropShadow").attr("dx",0).attr("dy",2).attr("stdDeviation",2.5).attr("flood-color","rgba(5,28,44,0.12)");
+
+    const g=svg.append("g").attr("transform",`translate(${MARGIN.left},${MARGIN.top})`);
+    g.append("rect").attr("width",IW).attr("height",IH).attr("fill","url(#ch4-sa)");
+    g.append("rect").attr("width",IW).attr("height",IH).attr("fill","url(#ch4-dz)");
+    g.append("text").attr("x",IW-6).attr("y",13).attr("text-anchor","end").attr("fill","var(--red)").attr("opacity",0.5).attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9px").attr("font-weight","600").attr("letter-spacing","0.1em").text("DANGER ZONE ▲");
+    g.append("text").attr("x",6).attr("y",IH-8).attr("text-anchor","start").attr("fill","var(--green)").attr("opacity",0.4).attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9px").attr("font-weight","600").attr("letter-spacing","0.1em").text("LOW RISK");
+
+    xSc.ticks(8).forEach(t=>{ g.append("line").attr("x1",xSc(t)).attr("x2",xSc(t)).attr("y1",0).attr("y2",IH).attr("stroke","var(--grey-4)").attr("stroke-width",1); });
+    ySc.ticks(7).forEach(t=>{ g.append("line").attr("x1",0).attr("x2",IW).attr("y1",ySc(t)).attr("y2",ySc(t)).attr("stroke","var(--grey-4)").attr("stroke-width",1); });
+    g.append("rect").attr("width",IW).attr("height",IH).attr("fill","none").attr("stroke","var(--grey-3)").attr("stroke-width","1");
+
+    // contours
+    [{cx:8,cy:12,rx:14,ry:9},{cx:26,cy:42,rx:18,ry:14},{cx:60,cy:63,rx:16,ry:10}].forEach(cl=>{
+      g.append("ellipse").attr("cx",xSc(cl.cx)).attr("cy",ySc(cl.cy))
+        .attr("rx",xSc(cl.rx)-xSc(0)).attr("ry",ySc(0)-ySc(cl.ry))
+        .attr("fill","none").attr("stroke","var(--grey-3)").attr("stroke-width","0.8").attr("stroke-dasharray","2 4").attr("opacity",0.5);
+    });
+
+    // axes
+    g.append("g").attr("transform",`translate(0,${IH})`).call(d3.axisBottom(xSc).ticks(8).tickFormat(d=>d+"%").tickSize(0))
+      .call(a=>a.select(".domain").remove()).call(a=>a.selectAll("text").attr("fill","var(--grey-2)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9.5px").attr("dy","1.4em"));
+    g.append("g").call(d3.axisLeft(ySc).ticks(7).tickFormat(d=>d+"%").tickSize(0))
+      .call(a=>a.select(".domain").remove()).call(a=>a.selectAll("text").attr("fill","var(--grey-2)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9.5px").attr("dx","-0.4em"));
+
+    g.append("text").attr("x",IW/2).attr("y",IH+50).attr("text-anchor","middle").attr("fill","var(--grey-1)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","10.5px").attr("font-weight","600").attr("letter-spacing","0.06em").text("SHARE OF POPULATION EXPERIENCING FOOD INSECURITY (%)");
+    g.append("text").attr("transform","rotate(-90)").attr("x",-IH/2).attr("y",-52).attr("text-anchor","middle").attr("fill","var(--grey-1)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","10.5px").attr("font-weight","600").attr("letter-spacing","0.06em").text("SHARE OF INCOME SPENT ON FOOD (%)");
+
+    // diagonal ref
+    g.append("line").attr("x1",xSc(0)).attr("y1",ySc(0)).attr("x2",xSc(80)).attr("y2",ySc(72)).attr("stroke","var(--grey-4)").attr("stroke-width","1").attr("stroke-dasharray","4 4");
+
+    // bubbles
+    const bubbles=g.selectAll(".bubble").data(countries).enter().append("g").attr("class","bubble")
+      .attr("transform",d=>`translate(${xSc(d.x)},${ySc(d.y)})`).style("cursor","pointer");
+    bubbles.append("circle").attr("r",d=>rSc(d.pop))
+      .attr("fill",d=>regionColors[d.r]).attr("opacity",0.60)
+      .attr("filter","url(#ch4-shadow)").attr("stroke","white").attr("stroke-width","0.8");
+
+    const notable=new Set(["India","China","United States","Nigeria","Ethiopia","Bangladesh"]);
+    bubbles.filter(d=>notable.has(d.n)).append("text").attr("text-anchor","middle").attr("dominant-baseline","middle")
+      .attr("fill","white").attr("font-weight","600").attr("font-family","'Source Sans 3',sans-serif")
+      .attr("font-size",d=>rSc(d.pop)>22?"8.5px":"7px").attr("pointer-events","none")
+      .text(d=>rSc(d.pop)>22?d.n.split(" ")[0]:d.f);
+
+    bubbles.on("mouseover",function(ev,d){
+      d3.select(this).select("circle").attr("opacity",0.9).attr("stroke","var(--blue-2)").attr("stroke-width","2");
+      const risk=d.x>45&&d.y>52?"var(--red)":d.x>20||d.y>30?"var(--amber)":"var(--green)";
+      showTip(ev,`${d.f} ${d.n}`,`${d.x}% face food insecurity · ${d.y}% of income on food · ${d.pop}M affected`,risk,d.items);
+    })
+    .on("mousemove",moveTip)
+    .on("mouseout",function(){ d3.select(this).select("circle").attr("opacity",0.60).attr("stroke","white").attr("stroke-width","0.8"); hideTip(); });
+
+    svg.append("text").attr("x",MARGIN.left).attr("y",MARGIN.top-18).attr("fill","var(--grey-1)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","10px").attr("font-weight","600").attr("letter-spacing","0.1em").text("FOOD INSECURITY vs. INCOME SHARE SPENT ON FOOD · BY COUNTRY");
+  }
+
+  window.addEventListener("resize",()=>{clearTimeout(ch4T);ch4T=setTimeout(()=>{render();},150);});
+  let ch4T;
+
+  const legEl=document.getElementById("ch4-region-legend");
+  Object.entries(regionColors).forEach(([r,c])=>{
+    const d=document.createElement("div");d.style.cssText="display:flex;align-items:center;gap:0.35rem;font-size:0.72rem;color:var(--grey-1);";
+    d.innerHTML=`<div style="width:9px;height:9px;border-radius:50%;background:${c};opacity:0.7;flex-shrink:0;"></div><span>${r}</span>`;
+    legEl.appendChild(d);
+  });
+
+  requestAnimationFrame(()=>{ resize(); });
+})();
+</script>
+<script>
+// ══════════════════════════════════════════════════
+// CHAPTER 5 — CONSTELLATION OF CAUSES
+// ══════════════════════════════════════════════════
+(function(){
+  const TOTAL=282;
+  const COLORS={conflict:"#002960",climate:"#307FBF",economic:"#0D5EA6",poverty:"#7EC8E3",mixed2:"#1a5080",all4:"#051C2C"};
+
+  function seededRng(seed){return ()=>{seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return(seed>>>0)/0xFFFFFFFF;};}
+  const rng=seededRng(77);
+  const dots=[];
+  for(let i=0;i<TOTAL;i++){
+    const r=rng();
+    let primary,drivers;
+    if(i<135){primary="conflict";drivers={conflict:true,climate:r<0.30,economic:r<0.25,poverty:r<0.40};}
+    else if(i<212){primary="climate";drivers={conflict:r<0.28,climate:true,economic:r<0.20,poverty:r<0.55};}
+    else{primary="economic";drivers={conflict:r<0.20,climate:r<0.25,economic:true,poverty:r<0.60};}
+    const numDrivers=Object.values(drivers).filter(Boolean).length;
+    dots.push({id:i,primary,drivers,numDrivers,x:0,y:0});
+  }
+
+  let W,H,states=[],currentState=-1,dashOff=0;
+
+  const svgEl=document.getElementById("ch5-svg");
+  const svg=d3.select("#ch5-svg");
+  let circles;
+
+  function hexGrid(count,cx,cy,sp){
+    const pos=[];const cols=Math.ceil(Math.sqrt(count*1.8));let placed=0,row=0;
+    while(placed<count){const rc=Math.ceil(cols*(row%2===0?1:0.95));const rw=rc*sp;const sx=cx-rw/2;
+      for(let c=0;c<rc&&placed<count;c++){pos.push({x:sx+c*sp+(row%2===0?0:sp/2),y:cy-(Math.ceil(count/cols)*sp*0.86)/2+row*sp*0.86});placed++;}row++;}
+    return pos;
+  }
+
+  function computeStates(){
+    const DR=W<700?3.2:3.8, SP=DR*2.55;
+    const cx=W/2, cy=H/2;
+    const st=[];
+
+    // state 0: mass
+    const p0=hexGrid(TOTAL,cx,cy-15,SP);
+    st.push(dots.map((d,i)=>({x:p0[i].x,y:p0[i].y,color:COLORS[d.primary],opacity:0.72})));
+
+    // states 1-3: highlight one driver
+    ["conflict","climate","economic"].forEach(driver=>{
+      const on=dots.filter(d=>d.drivers[driver]),off=dots.filter(d=>!d.drivers[driver]);
+      const po=hexGrid(on.length,cx*0.50,cy-8,SP);
+      const pf=hexGrid(off.length,cx*1.52,cy+8,SP*0.92);
+      const map={};
+      on.forEach((d,i)=>map[d.id]={x:po[i].x,y:po[i].y,color:COLORS[driver],opacity:0.88});
+      off.forEach((d,i)=>map[d.id]={x:pf[i].x,y:pf[i].y,color:COLORS[driver],opacity:0.09});
+      st.push(dots.map(d=>map[d.id]));
+    });
+
+    // state 4: compound
+    const s1=dots.filter(d=>d.numDrivers===1),s2=dots.filter(d=>d.numDrivers===2),s3=dots.filter(d=>d.numDrivers>=3);
+    const ps1=hexGrid(s1.length,W*0.20,cy,SP*0.92);
+    const ps2=hexGrid(s2.length,cx,cy-12,SP);
+    const ps3=hexGrid(s3.length,W*0.80,cy,SP);
+    const map4={};
+    s1.forEach((d,i)=>map4[d.id]={x:ps1[i].x,y:ps1[i].y,color:COLORS[d.primary],opacity:0.68});
+    s2.forEach((d,i)=>map4[d.id]={x:ps2[i].x,y:ps2[i].y,color:COLORS.mixed2,opacity:0.82});
+    s3.forEach((d,i)=>map4[d.id]={x:ps3[i].x,y:ps3[i].y,color:COLORS.all4,opacity:0.95});
+    st.push(dots.map(d=>map4[d.id]));
+
+    return st;
+  }
+
+  function buildVis(){
+    const wrap=document.getElementById("ch5-sticky");
+    W=wrap.clientWidth; H=wrap.clientHeight;
+    const DR=W<700?3.2:3.8;
+    states=computeStates();
+    svg.selectAll("*").remove();
+
+    const defs=svg.append("defs");
+    const pat=defs.append("pattern").attr("id","ch5-grid").attr("width",40).attr("height",40).attr("patternUnits","userSpaceOnUse");
+    pat.append("path").attr("d","M 40 0 L 0 0 0 40").attr("fill","none").attr("stroke","#E8EAEC").attr("stroke-width","0.5");
+    svg.append("rect").attr("width","100%").attr("height","100%").attr("fill","#FAFBFC");
+    svg.append("rect").attr("width","100%").attr("height","100%").attr("fill","url(#ch5-grid)").attr("opacity","0.6");
+
+    // group labels for state 4
+    const s1=dots.filter(d=>d.numDrivers===1).length;
+    const s2=dots.filter(d=>d.numDrivers===2).length;
+    const s3=dots.filter(d=>d.numDrivers>=3).length;
+    const glG=svg.append("g").attr("id","ch5-glabels").attr("opacity",0);
+    [{x:W*0.20,t:"Single driver",s:`${s1}M people`,c:"var(--grey-1)"},
+     {x:W*0.50,t:"Two drivers",  s:`${s2}M people`,c:"var(--blue-2)"},
+     {x:W*0.80,t:"Three+ drivers",s:`${s3}M people`,c:"var(--blue-1)"}].forEach(lb=>{
+       glG.append("text").attr("x",lb.x).attr("y",H*0.09).attr("text-anchor","middle")
+         .attr("fill",lb.c).attr("font-family","'Libre Baskerville',serif").attr("font-size","13px").attr("font-weight","700").text(lb.t);
+       glG.append("text").attr("x",lb.x).attr("y",H*0.09+16).attr("text-anchor","middle")
+         .attr("fill","var(--grey-2)").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","10px").text(lb.s);
+    });
+    const dvG=svg.append("g").attr("id","ch5-dividers").attr("opacity",0);
+    [W*0.36,W*0.64].forEach(x=>{
+      dvG.append("line").attr("x1",x).attr("y1",H*0.06).attr("x2",x).attr("y2",H*0.94)
+        .attr("stroke","var(--grey-3)").attr("stroke-width","1").attr("stroke-dasharray","4 4");
+    });
+
+    const init=states[0];
+    circles=svg.append("g").selectAll("circle").data(dots).enter().append("circle")
+      .attr("r",DR).attr("cx",(d,i)=>init[i].x).attr("cy",(d,i)=>init[i].y)
+      .attr("fill",(d,i)=>init[i].color).attr("opacity",(d,i)=>init[i].opacity);
+
+    transitionTo(0,true);
+  }
+
+  function transitionTo(idx,instant){
+    if(idx===currentState)return;
+    currentState=idx;
+    const target=states[idx];
+    const dur=instant?0:880;
+    circles.transition().duration(dur).ease(d3.easeCubicInOut)
+      .delay((d,i)=>instant?0:(i/TOTAL)*260)
+      .attr("cx",(d,i)=>target[i].x).attr("cy",(d,i)=>target[i].y)
+      .attr("fill",(d,i)=>target[i].color).attr("opacity",(d,i)=>target[i].opacity);
+    svg.select("#ch5-glabels").transition().duration(dur/2).attr("opacity",idx===4?1:0);
+    svg.select("#ch5-dividers").transition().duration(dur/2).attr("opacity",idx===4?1:0);
+    const labels=[
+      {n:"282",l:"million in acute food insecurity"},
+      {n:"135M",l:"driven by conflict"},
+      {n:"77M",l:"driven by climate shock"},
+      {n:"93M",l:"driven by economic crisis"},
+      {n:"59%",l:"face two or more drivers simultaneously"},
+    ];
+    const el=document.getElementById("ch5-counter-num"),lb=document.getElementById("ch5-counter-lbl");
+    el.style.opacity=0;lb.style.opacity=0;
+    setTimeout(()=>{el.textContent=labels[idx].n;lb.textContent=labels[idx].l;el.style.opacity=1;lb.style.opacity=1;el.style.transition="opacity 0.4s";lb.style.transition="opacity 0.4s";},200);
+  }
+
+  function onScroll(){
+    const steps=document.querySelectorAll(".ch5-step");
+    let best=0,bestOvl=-Infinity;
+    steps.forEach((el,i)=>{
+      const r=el.getBoundingClientRect();
+      const ovl=Math.min(r.bottom,window.innerHeight)-Math.max(r.top,0);
+      if(ovl>bestOvl){bestOvl=ovl;best=i;}
+    });
+    transitionTo(best);
+  }
+
+  window.addEventListener("scroll",onScroll,{passive:true});
+  window.addEventListener("resize",()=>{clearTimeout(ch5T);ch5T=setTimeout(()=>{buildVis();onScroll();},150);});
+  let ch5T;
+
+  // Defer until layout is complete so clientWidth/Height are accurate
+  requestAnimationFrame(()=>{ buildVis(); onScroll(); });
+})();
+</script>
+<script>
+// ══════════════════════════════════════════════════
+// CHAPTER 7 — LEVER BOARD
+// ══════════════════════════════════════════════════
+(function(){
+  const levers=[
+    {id:"waste",name:"Reduce food loss & waste",desc:"Halving food waste globally adds the caloric equivalent of feeding 1.5 billion people. Post-harvest loss in low-income countries is largely preventable with storage and cold-chain investment.",unit:"% waste reduced",maxImpact:92,impactTag:"high",min:0,max:50,default:0,labelMin:"No action",labelMax:"−50% waste",synergies:["yield","trade"]},
+    {id:"diets",name:"Shift diets in high-income countries",desc:"Reducing meat consumption in wealthy nations frees vast quantities of land and grain currently diverted to animal feed — redirecting calories toward direct human consumption.",unit:"% animal protein reduced",maxImpact:74,impactTag:"high",min:0,max:40,default:0,labelMin:"No action",labelMax:"−40% animal protein",synergies:["waste","subsidies"]},
+    {id:"yield",name:"Close smallholder yield gaps",desc:"Smallholder farmers in sub-Saharan Africa and South Asia produce at 30–50% of potential. Closing this gap through inputs, credit, and extension services is the highest-return investment in food security.",unit:"% of yield gap closed",maxImpact:108,impactTag:"high",min:0,max:80,default:0,labelMin:"No action",labelMax:"80% closed",synergies:["subsidies","trade"]},
+    {id:"subsidies",name:"Reform fossil fuel & agri-subsidies",desc:"Redirecting $540bn/year in agricultural subsidies — most incentivising overproduction in wealthy nations — toward sustainable smallholder support and public goods.",unit:"% of subsidies redirected",maxImpact:58,impactTag:"medium",min:0,max:70,default:0,labelMin:"No action",labelMax:"70% reformed",synergies:["yield","diets"]},
+    {id:"smallholder",name:"Invest in smallholder infrastructure",desc:"Roads, storage, electricity, and digital services connecting rural farmers to markets. Post-harvest loss exceeds 30% in low-income countries — most preventable with basic infrastructure.",unit:"% of investment target",maxImpact:82,impactTag:"high",min:0,max:100,default:0,labelMin:"No action",labelMax:"Full target",synergies:["yield","waste"]},
+    {id:"trade",name:"Reform global trade rules",desc:"Removing export restrictions during crises, building strategic reserves, and embedding food security safeguards into trade agreements. Reduces the price volatility that triggers acute crises.",unit:"% of reforms implemented",maxImpact:44,impactTag:"medium",min:0,max:100,default:0,labelMin:"No action",labelMax:"Full reform",synergies:["waste","yield"]},
+    {id:"social",name:"Expand social protection floors",desc:"Cash transfers, school feeding, and food price stabilisation programmes. The most proven short-term mechanism for reducing acute hunger — but requires sustained political commitment and fiscal capacity.",unit:"% coverage increase",maxImpact:66,impactTag:"medium",min:0,max:80,default:0,labelMin:"No action",labelMax:"+80% coverage",synergies:["smallholder","subsidies"]},
+  ];
+  const presets={
+    baseline:{waste:0,diets:0,yield:0,subsidies:0,smallholder:0,trade:0,social:0},
+    govmin:{waste:10,diets:5,yield:15,subsidies:10,smallholder:20,trade:15,social:25},
+    paris:{waste:25,diets:20,yield:40,subsidies:30,smallholder:50,trade:40,social:45},
+    ambitious:{waste:50,diets:40,yield:80,subsidies:70,smallholder:100,trade:100,social:80},
+  };
+  const BASELINE_2023=282, BASELINE_2050=582, MAX_REDUCIBLE=480;
+  const vals={};
+  levers.forEach(l=>vals[l.id]=l.default);
+
+  // build UI
+  const container=document.getElementById("ch7-levers-container");
+  levers.forEach(lever=>{
+    const card=document.createElement("div");
+    card.className="lever-card"; card.id=`ch7-card-${lever.id}`;
+    const tagCls=lever.impactTag==="high"?"tag-high":"tag-medium";
+    const tagLbl=lever.impactTag==="high"?"High impact":"Medium impact";
+    card.innerHTML=`
+      <div class="lever-head">
+        <div class="lever-name">${lever.name}</div>
+        <div class="lever-tag ${tagCls}">${tagLbl}</div>
+      </div>
+      <div class="lever-desc">${lever.desc}</div>
+      <div class="slider-wrap">
+        <div style="flex:1">
+          <div class="slider-track-wrap">
+            <div class="slider-fill" id="ch7-fill-${lever.id}" style="width:0%"></div>
+            <input type="range" id="ch7-slider-${lever.id}" min="${lever.min}" max="${lever.max}" value="0" step="1" oninput="ch7OnSlider('${lever.id}',this.value)">
+          </div>
+          <div class="slider-labels"><span>${lever.labelMin}</span><span>${lever.labelMax}</span></div>
+        </div>
+        <div class="lever-val" id="ch7-val-${lever.id}">0<br><span class="lever-val-unit">${lever.unit.split(' ')[0]}</span></div>
+      </div>`;
+    container.appendChild(card);
+  });
+
+  window.ch7OnSlider=function(id,rawVal){
+    const val=parseInt(rawVal);
+    vals[id]=val;
+    const lever=levers.find(l=>l.id===id);
+    const pct=((val-lever.min)/(lever.max-lever.min))*100;
+    document.getElementById(`ch7-fill-${id}`).style.width=pct+"%";
+    document.getElementById(`ch7-val-${id}`).innerHTML=`${val}<br><span class="lever-val-unit">${lever.unit.split(' ')[0]}</span>`;
+    const card=document.getElementById(`ch7-card-${id}`);
+    card.className=val===0?"lever-card":val>=lever.max*0.95?"lever-card maxed":"lever-card active";
+    document.querySelectorAll(".preset-btn").forEach(b=>b.classList.remove("selected"));
+    ch7Update();
+  };
+
+  function computeImpact(){
+    let total=0; const perLever={};
+    levers.forEach(lever=>{
+      const t=vals[lever.id]/lever.max;
+      const eff=1-Math.pow(1-t,1.6);
+      let syn=1.0;
+      lever.synergies.forEach(sid=>{const sv=vals[sid]/levers.find(l=>l.id===sid).max;syn+=sv*0.12;});
+      syn=Math.min(syn,1.35);
+      const imp=lever.maxImpact*eff*syn;
+      perLever[lever.id]=Math.round(imp); total+=imp;
+    });
+    const combined=Math.min(total*0.82,MAX_REDUCIBLE);
+    return{projected:Math.max(82,Math.round(BASELINE_2050-combined)),perLever,combined:Math.round(combined)};
+  }
+
+  let currentProj=BASELINE_2050,animT=BASELINE_2050,raf=null;
+  function ch7Update(){
+    const{projected,perLever}=computeImpact();
+    animT=projected; animCounter();
+    updateDial(projected); updateVerdict(projected);
+    updateBars(perLever); updateSparkline(projected);
+  }
+
+  function animCounter(){
+    cancelAnimationFrame(raf);
+    const start=currentProj,end=animT,dur=600,t0=performance.now();
+    function frame(now){
+      const prog=Math.min((now-t0)/dur,1),ease=1-Math.pow(1-prog,3);
+      currentProj=Math.round(start+(end-start)*ease);
+      document.getElementById("score-num").textContent=currentProj;
+      if(prog<1)raf=requestAnimationFrame(frame);else currentProj=end;
+    }
+    raf=requestAnimationFrame(frame);
+  }
+
+  function describeArc(cx,cy,r,startDeg,endDeg){
+    const s=((startDeg-90)*Math.PI)/180,e=((endDeg-90)*Math.PI)/180;
+    const x1=cx+r*Math.cos(s),y1=cy+r*Math.sin(s),x2=cx+r*Math.cos(e),y2=cy+r*Math.sin(e);
+    return`M${x1} ${y1} A ${r} ${r} 0 ${endDeg-startDeg>180?1:0} 1 ${x2} ${y2}`;
+  }
+
+  function updateDial(projected){
+    const dEl=document.getElementById("dial-svg"); dEl.innerHTML="";
+    const DW=190,DH=108,cx=DW/2,cy=DH-10,R=74;
+    const segColors=["#006B3C","#307FBF","#0D5EA6","#002960","#8B1A1A"];
+    for(let i=0;i<5;i++){
+      const sp=describeArc(cx,cy,R,180+i*36,180+(i+1)*36);
+      const seg=document.createElementNS("http://www.w3.org/2000/svg","path");
+      seg.setAttribute("d",sp);seg.setAttribute("fill","none");seg.setAttribute("stroke",segColors[4-i]);
+      seg.setAttribute("stroke-width","8");seg.setAttribute("stroke-linecap","butt");
+      dEl.appendChild(seg);
+    }
+    const t=(projected-82)/(582-82);
+    const needleAngle=180-t*180;
+    const nr=(needleAngle*Math.PI)/180;
+    const nx=cx+(R-18)*Math.cos(Math.PI-nr),ny=cy-(R-18)*Math.sin(Math.PI-nr);
+    const nl=document.createElementNS("http://www.w3.org/2000/svg","line");
+    nl.setAttribute("x1",cx);nl.setAttribute("y1",cy);nl.setAttribute("x2",nx);nl.setAttribute("y2",ny);
+    nl.setAttribute("stroke","var(--ink)");nl.setAttribute("stroke-width","2.5");nl.setAttribute("stroke-linecap","round");
+    dEl.appendChild(nl);
+    const pc=document.createElementNS("http://www.w3.org/2000/svg","circle");
+    pc.setAttribute("cx",cx);pc.setAttribute("cy",cy);pc.setAttribute("r","5");pc.setAttribute("fill","var(--ink)");
+    dEl.appendChild(pc);
+    ["82M","582M"].forEach((lbl,i)=>{
+      const lt=document.createElementNS("http://www.w3.org/2000/svg","text");
+      lt.setAttribute("x",i===0?"6":DW-36);lt.setAttribute("y",DH-2);
+      lt.setAttribute("font-size","9");lt.setAttribute("fill",i===0?"var(--green)":"var(--red)");
+      lt.setAttribute("font-family","'Source Sans 3',sans-serif");lt.textContent=lbl;
+      dEl.appendChild(lt);
+    });
+  }
+
+  function updateVerdict(projected){
+    const el=document.getElementById("score-verdict");
+    const pct=Math.round(((BASELINE_2050-projected)/BASELINE_2050)*100);
+    if(projected>=500){el.textContent="Trajectory: worsening";el.style.background="var(--red-lt)";el.style.color="var(--red)";document.getElementById("score-num").style.color="var(--red)";}
+    else if(projected>=350){el.textContent=`Slight improvement (−${pct}%)`;el.style.background="var(--amber-lt)";el.style.color="var(--amber)";document.getElementById("score-num").style.color="var(--amber)";}
+    else if(projected>=150){el.textContent=`Strong progress: −${pct}%`;el.style.background="var(--blue-6)";el.style.color="var(--blue-2)";document.getElementById("score-num").style.color="var(--blue-2)";}
+    else{el.textContent=`Near-zero hunger: −${pct}%`;el.style.background="var(--green-lt)";el.style.color="var(--green)";document.getElementById("score-num").style.color="var(--green)";}
+  }
+
+  function updateBars(perLever){
+    const el=document.getElementById("impact-bars");el.innerHTML="";
+    const maxI=Math.max(...Object.values(perLever),1);
+    levers.forEach(lever=>{
+      const val=perLever[lever.id]||0;
+      const pct=(val/maxI)*100;
+      const row=document.createElement("div");row.className="impact-bar-row";
+      row.innerHTML=`<div class="impact-bar-name">${lever.name.split(' ').slice(0,3).join(' ')}…</div><div class="impact-bar-track"><div class="impact-bar-fill" style="width:${pct}%"></div></div><div class="impact-bar-val">${val>0?'−'+val:'0'}</div>`;
+      el.appendChild(row);
+    });
+  }
+
+  function updateSparkline(projected){
+    const svgEl=document.getElementById("spark-svg");svgEl.innerHTML="";
+    const W=300,H=78,pad={t:8,r:10,b:18,l:28};
+    const iW=W-pad.l-pad.r,iH=H-pad.t-pad.b;
+    const years=[2023,2030,2035,2040,2045,2050];
+    const baseV=[282,320,370,430,500,582];
+    const scenV=years.map((_,i)=>{const t=i/(years.length-1);return Math.round(BASELINE_2023+(projected-BASELINE_2023)*Math.pow(t,0.7));});
+    const allV=[...baseV,...scenV];
+    const xSc=d3.scaleLinear().domain([2023,2050]).range([0,iW]);
+    const ySc=d3.scaleLinear().domain([Math.min(...allV)-15,Math.max(...allV)+15]).range([iH,0]);
+    const svg_=d3.select(svgEl);const g=svg_.append("g").attr("transform",`translate(${pad.l},${pad.t})`);
+    g.append("line").attr("x1",0).attr("y1",iH).attr("x2",iW).attr("y2",iH).attr("stroke","var(--grey-4)").attr("stroke-width",1);
+    [100,200,300,400,500].forEach(v=>{if(v<Math.min(...allV)-15||v>Math.max(...allV)+15)return;const y=ySc(v);g.append("line").attr("x1",0).attr("y1",y).attr("x2",iW).attr("y2",y).attr("stroke","var(--grey-4)").attr("stroke-width","0.5");g.append("text").attr("x",-3).attr("y",y).attr("text-anchor","end").attr("dominant-baseline","middle").attr("fill","var(--grey-2)").attr("font-size","6.5px").attr("font-family","'Source Sans 3',sans-serif").text(v+"M");});
+    [2023,2035,2050].forEach(yr=>{g.append("text").attr("x",xSc(yr)).attr("y",iH+10).attr("text-anchor","middle").attr("fill","var(--grey-2)").attr("font-size","6.5px").attr("font-family","'Source Sans 3',sans-serif").text(yr);});
+    const line=d3.line().x((_,i)=>xSc(years[i])).y(d=>ySc(d)).curve(d3.curveCatmullRom);
+    const area=d3.area().x((_,i)=>xSc(years[i])).y0(iH).y1(d=>ySc(d)).curve(d3.curveCatmullRom);
+    g.append("path").datum(baseV).attr("d",line).attr("fill","none").attr("stroke","var(--grey-3)").attr("stroke-width","1.5").attr("stroke-dasharray","4 3");
+    g.append("path").datum(scenV).attr("d",area).attr("fill","var(--blue-2)").attr("opacity","0.07");
+    g.append("path").datum(scenV).attr("d",line).attr("fill","none").attr("stroke","var(--blue-2)").attr("stroke-width","2");
+    g.append("circle").attr("cx",xSc(2050)).attr("cy",ySc(baseV[5])).attr("r",3).attr("fill","var(--grey-3)");
+    g.append("circle").attr("cx",xSc(2050)).attr("cy",ySc(scenV[5])).attr("r",3).attr("fill","var(--blue-2)");
+  }
+
+  window.ch7LoadPreset=function(name,btn){
+    const preset=presets[name];
+    levers.forEach(lever=>{
+      const val=preset[lever.id]??0;vals[lever.id]=val;
+      const sl=document.getElementById(`ch7-slider-${lever.id}`);if(!sl)return;
+      sl.value=val;
+      const pct=((val-lever.min)/(lever.max-lever.min))*100;
+      document.getElementById(`ch7-fill-${lever.id}`).style.width=pct+"%";
+      document.getElementById(`ch7-val-${lever.id}`).innerHTML=`${val}<br><span class="lever-val-unit">${lever.unit.split(' ')[0]}</span>`;
+      const card=document.getElementById(`ch7-card-${lever.id}`);
+      card.className=val===0?"lever-card":val>=lever.max*0.95?"lever-card maxed":"lever-card active";
+    });
+    document.querySelectorAll(".preset-btn").forEach(b=>b.classList.remove("selected"));
+    if(btn)btn.classList.add("selected");
+    ch7Update();
+  };
+
+  window.ch7ResetAll=function(){
+    ch7LoadPreset("baseline",null);
+    document.querySelector("[data-preset='baseline']").classList.add("selected");
+  };
+
+  requestAnimationFrame(()=>{ ch7Update(); });
+})();
+</script>
+
+<script>
+// ══════════════════════════════════════════════════
+// CHAPTER 6 — FOOD INSECURITY VS AGRI EMPLOYMENT
+// Small multiples by income group, with global sort
+// ══════════════════════════════════════════════════
+(function(){
+
+const fiData = [
+  // Low-income
+  {c:"Ethiopia",       iso:"ETH", fi:52, ae:68, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"DR Congo",       iso:"COD", fi:58, ae:72, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Niger",          iso:"NER", fi:61, ae:78, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Chad",           iso:"TCD", fi:55, ae:74, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Mali",           iso:"MLI", fi:50, ae:69, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Burkina Faso",   iso:"BFA", fi:48, ae:76, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Mozambique",     iso:"MOZ", fi:53, ae:71, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Sierra Leone",   iso:"SLE", fi:49, ae:63, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Madagascar",     iso:"MDG", fi:56, ae:77, region:"Sub-Saharan Africa",  income:"Low income"},
+  {c:"Afghanistan",    iso:"AFG", fi:60, ae:58, region:"South Asia",          income:"Low income"},
+  {c:"Yemen",          iso:"YEM", fi:62, ae:30, region:"M.East & N.Africa",   income:"Low income"},
+  // Lower-middle income
+  {c:"Nigeria",        iso:"NGA", fi:46, ae:35, region:"Sub-Saharan Africa",  income:"Lower-middle"},
+  {c:"Kenya",          iso:"KEN", fi:38, ae:54, region:"Sub-Saharan Africa",  income:"Lower-middle"},
+  {c:"Ghana",          iso:"GHA", fi:34, ae:44, region:"Sub-Saharan Africa",  income:"Lower-middle"},
+  {c:"Senegal",        iso:"SEN", fi:39, ae:52, region:"Sub-Saharan Africa",  income:"Lower-middle"},
+  {c:"Tanzania",       iso:"TZA", fi:41, ae:65, region:"Sub-Saharan Africa",  income:"Lower-middle"},
+  {c:"Zambia",         iso:"ZMB", fi:44, ae:55, region:"Sub-Saharan Africa",  income:"Lower-middle"},
+  {c:"India",          iso:"IND", fi:28, ae:43, region:"South Asia",          income:"Lower-middle"},
+  {c:"Bangladesh",     iso:"BGD", fi:30, ae:38, region:"South Asia",          income:"Lower-middle"},
+  {c:"Pakistan",       iso:"PAK", fi:34, ae:40, region:"South Asia",          income:"Lower-middle"},
+  {c:"Cambodia",       iso:"KHM", fi:22, ae:32, region:"SE Asia",             income:"Lower-middle"},
+  {c:"Myanmar",        iso:"MMR", fi:29, ae:48, region:"SE Asia",             income:"Lower-middle"},
+  {c:"Egypt",          iso:"EGY", fi:26, ae:24, region:"M.East & N.Africa",   income:"Lower-middle"},
+  {c:"Morocco",        iso:"MAR", fi:22, ae:30, region:"M.East & N.Africa",   income:"Lower-middle"},
+  {c:"Bolivia",        iso:"BOL", fi:28, ae:26, region:"Latin America",       income:"Lower-middle"},
+  {c:"Honduras",       iso:"HND", fi:32, ae:28, region:"Latin America",       income:"Lower-middle"},
+  {c:"Haiti",          iso:"HTI", fi:48, ae:38, region:"Latin America",       income:"Lower-middle"},
+  // Upper-middle income
+  {c:"South Africa",   iso:"ZAF", fi:26, ae:10, region:"Sub-Saharan Africa",  income:"Upper-middle"},
+  {c:"Eswatini",       iso:"SWZ", fi:42, ae:14, region:"Sub-Saharan Africa",  income:"Upper-middle"},
+  {c:"Botswana",       iso:"BWA", fi:34, ae:22, region:"Sub-Saharan Africa",  income:"Upper-middle"},
+  {c:"Brazil",         iso:"BRA", fi:14, ae:10, region:"Latin America",       income:"Upper-middle"},
+  {c:"Mexico",         iso:"MEX", fi:18, ae:12, region:"Latin America",       income:"Upper-middle"},
+  {c:"Colombia",       iso:"COL", fi:20, ae:16, region:"Latin America",       income:"Upper-middle"},
+  {c:"Ecuador",        iso:"ECU", fi:22, ae:28, region:"Latin America",       income:"Upper-middle"},
+  {c:"Peru",           iso:"PER", fi:16, ae:28, region:"Latin America",       income:"Upper-middle"},
+  {c:"China",          iso:"CHN", fi: 8, ae:24, region:"East Asia",           income:"Upper-middle"},
+  {c:"Thailand",       iso:"THA", fi:10, ae:32, region:"SE Asia",             income:"Upper-middle"},
+  {c:"Turkey",         iso:"TUR", fi:10, ae:18, region:"M.East & N.Africa",   income:"Upper-middle"},
+  {c:"Ukraine",        iso:"UKR", fi:14, ae:14, region:"Europe",              income:"Upper-middle"},
+  {c:"Venezuela",      iso:"VEN", fi:36, ae: 8, region:"Latin America",       income:"Upper-middle"},
+  {c:"Algeria",        iso:"DZA", fi:12, ae:12, region:"M.East & N.Africa",   income:"Upper-middle"},
+  // High income
+  {c:"United States",  iso:"USA", fi: 9, ae: 2, region:"North America",       income:"High income"},
+  {c:"United Kingdom", iso:"GBR", fi: 8, ae: 1, region:"Europe",              income:"High income"},
+  {c:"Germany",        iso:"DEU", fi: 6, ae: 1, region:"Europe",              income:"High income"},
+  {c:"France",         iso:"FRA", fi: 8, ae: 3, region:"Europe",              income:"High income"},
+  {c:"Italy",          iso:"ITA", fi:10, ae: 4, region:"Europe",              income:"High income"},
+  {c:"Spain",          iso:"ESP", fi:11, ae: 4, region:"Europe",              income:"High income"},
+  {c:"Australia",      iso:"AUS", fi: 7, ae: 3, region:"Oceania",             income:"High income"},
+  {c:"Canada",         iso:"CAN", fi: 8, ae: 2, region:"North America",       income:"High income"},
+  {c:"Japan",          iso:"JPN", fi: 6, ae: 3, region:"East Asia",           income:"High income"},
+  {c:"South Korea",    iso:"KOR", fi: 7, ae: 5, region:"East Asia",           income:"High income"},
+  {c:"Chile",          iso:"CHL", fi:14, ae:10, region:"Latin America",       income:"High income"},
+  {c:"Poland",         iso:"POL", fi: 8, ae:10, region:"Europe",              income:"High income"},
+];
+
+fiData.forEach(d => {
+  d.excess   = Math.max(0, d.fi - d.ae);
+  d.agri_cap = Math.min(d.fi, d.ae);
+  d.better   = Math.max(0, d.ae - d.fi);
+});
+
+// ── FI TOOLTIP HELPERS ──────────────────────────
+const fiTipEl = document.getElementById("fi-tip");
+function showFITip(e, d) {
+  document.getElementById("fi-tip-name").textContent = d.c;
+  document.getElementById("fi-tip-fi").textContent   = d.fi + "%";
+  document.getElementById("fi-tip-ae").textContent   = d.ae + "%";
+  const exEl = document.getElementById("fi-tip-excess");
+  if (d.excess > 0) {
+    exEl.innerHTML = '<span style="color:var(--red);font-weight:600;">+' + d.excess + 'pp excess</span> — beyond what agri employment predicts';
+    fiTipEl.style.borderTopColor = "var(--red)";
+  } else {
+    exEl.innerHTML = '<span style="color:var(--green);font-weight:600;">' + d.better + 'pp below expected</span> — better outcomes than employment structure predicts';
+    fiTipEl.style.borderTopColor = "var(--green)";
+  }
+  fiTipEl.style.opacity = 1;
+  moveFITip(e);
+}
+function moveFITip(e) {
+  let x = e.clientX + 14, y = e.clientY - 10;
+  if (x + 260 > window.innerWidth)  x = e.clientX - 270;
+  if (y + 180 > window.innerHeight) y = e.clientY - 180;
+  fiTipEl.style.left = x + "px";
+  fiTipEl.style.top  = y + "px";
+}
+function hideFITip() { fiTipEl.style.opacity = 0; }
+
+// ── SORT STATE ───────────────────────────────────
+let fiSortKey = "excess";
+
+function getSorted(grp) {
+  const subset = fiData.filter(d => d.income === grp);
+  return [...subset].sort((a, b) => {
+    if (fiSortKey === "excess") return b.excess - a.excess;
+    if (fiSortKey === "total")  return b.fi - a.fi;
+    if (fiSortKey === "agri")   return b.ae - a.ae;
+    return 0;
+  });
+}
+
+// ── INCOME GROUP CONFIG ─────────────────────────
+const INCOME_GROUPS_FI = ["Low income", "Lower-middle", "Upper-middle", "High income"];
+const INCOME_INSIGHT_FI = {
+  "Low income":     "In low-income countries, food insecurity and agricultural employment move in lockstep. Improving farm productivity addresses both at once.",
+  "Lower-middle":   "The structural explanation starts to break down. Urbanisation pulls workers off farms while food stays unaffordable in cities.",
+  "Upper-middle":   "Countries like Eswatini and Venezuela show large excess gaps driven by inequality, conflict, or economic shock — not agricultural structure.",
+  "High income":    "Virtually no agricultural employment, yet persistent food insecurity: a purely affordability and inequality problem requiring social protection, not farming interventions."
+};
+
+// ── BUILD GRID (creates DOM panels once) ─────────
+function buildFIOpt4() {
+  const grid = document.getElementById("sm-grid");
+  if (!grid) return;
+  grid.innerHTML = "";
+
+  INCOME_GROUPS_FI.forEach(grp => {
+    const avgGap = d3.mean(fiData.filter(d => d.income === grp), d => d.excess).toFixed(1);
+    const avgFI  = d3.mean(fiData.filter(d => d.income === grp), d => d.fi).toFixed(1);
+    const svgId  = "sm-svg-" + grp.replace(/[ \-]/g, "_");
+
+    const panel = document.createElement("div");
+    panel.className = "sm-panel";
+    panel.innerHTML =
+      '<div class="sm-panel-title">' + grp.toUpperCase() + '</div>' +
+      '<div class="sm-panel-n">' + avgFI + '% <span>avg food insecurity</span>' +
+      '&nbsp;·&nbsp; +' + avgGap + 'pp <span>avg unexplained gap</span></div>' +
+      '<p style="font-size:0.72rem;line-height:1.6;color:var(--grey-1);font-weight:300;margin-bottom:1rem;">' + INCOME_INSIGHT_FI[grp] + '</p>' +
+      '<svg class="sm-svg" id="' + svgId + '"></svg>';
+    grid.appendChild(panel);
+  });
+
+  // Two rAF frames ensure panels are laid out before we measure widths
+  requestAnimationFrame(function() {
+    requestAnimationFrame(function() {
+      redrawAllPanels();
+    });
+  });
+}
+
+// ── REDRAW ALL PANELS (called on sort change or resize) ──
+function redrawAllPanels() {
+  INCOME_GROUPS_FI.forEach(grp => {
+    const svgId    = "sm-svg-" + grp.replace(/[ \-]/g, "_");
+    const countries = getSorted(grp);
+    drawFISmall(svgId, countries);
+  });
+}
+
+// ── DRAW ONE SMALL-MULTIPLE PANEL ───────────────
+function drawFISmall(svgId, countries) {
+  const svgEl = document.getElementById(svgId);
+  if (!svgEl) return;
+
+  let pW = svgEl.parentElement.clientWidth - 28;
+  if (pW <= 0) {
+    const grid = document.getElementById("sm-grid");
+    pW = grid ? (grid.clientWidth / 2 - 56) : (window.innerWidth / 2 - 80);
+  }
+  if (pW <= 0) pW = 400;
+
+  const BAR_H = 14, BAR_GAP = 5, LABEL_W = 92;
+  const IW      = Math.max(100, pW - LABEL_W - 40);
+  const IH      = countries.length * (BAR_H + BAR_GAP);
+  const totalH  = IH + 28;
+  const patId   = "fi-hatch-" + svgId.replace(/[^a-z0-9]/gi, "_");
+
+  svgEl.setAttribute("viewBox", "0 0 " + pW + " " + totalH);
+  svgEl.setAttribute("height",  totalH);
+
+  const svgSel = d3.select("#" + svgId);
+  svgSel.selectAll("*").remove();
+
+  // Hatch pattern for excess
+  const defs = svgSel.append("defs");
+  const pat  = defs.append("pattern")
+    .attr("id", patId).attr("width",5).attr("height",5)
+    .attr("patternUnits","userSpaceOnUse").attr("patternTransform","rotate(45)");
+  pat.append("rect").attr("width",5).attr("height",5).attr("fill","#FCECEA");
+  pat.append("line").attr("x1",0).attr("y1",0).attr("x2",0).attr("y2",5)
+    .attr("stroke","#C01B2D").attr("stroke-width","1.6").attr("opacity","0.55");
+
+  const xMax = Math.min(90, d3.max(countries, d => Math.max(d.fi, d.ae)) + 8);
+  const xSc  = d3.scaleLinear().domain([0, xMax]).range([0, IW]);
+  const g    = svgSel.append("g").attr("transform", "translate(" + LABEL_W + ",16)");
+
+  // Gridlines + axis labels
+  [0, 20, 40, 60, 80].filter(t => t <= xMax).forEach(t => {
+    g.append("line")
+      .attr("x1",xSc(t)).attr("x2",xSc(t)).attr("y1",-12).attr("y2",IH)
+      .attr("stroke","var(--grey-4)").attr("stroke-width","0.7");
+    g.append("text")
+      .attr("x",xSc(t)).attr("y",-15).attr("text-anchor","middle")
+      .attr("fill","var(--grey-3)").attr("font-size","8px")
+      .attr("font-family","'Source Sans 3',sans-serif").text(t + "%");
+  });
+
+  // Bars
+  countries.forEach(function(d, i) {
+    const y   = i * (BAR_H + BAR_GAP);
+    const rg  = g.append("g").style("cursor","pointer");
+
+    // Invisible hover target spanning full row width
+    rg.append("rect")
+      .attr("x", -LABEL_W).attr("y", y - 1)
+      .attr("width", pW).attr("height", BAR_H + 2)
+      .attr("fill","transparent")
+      .on("mouseover", function(e){ showFITip(e, d); d3.select(this).attr("fill","rgba(13,94,166,0.04)"); })
+      .on("mousemove", moveFITip)
+      .on("mouseout",  function(){ hideFITip(); d3.select(this).attr("fill","transparent"); });
+
+    const barH2  = BAR_H * 0.55;
+    const offset = (BAR_H - barH2) / 2;
+
+    // Food insecurity base bar (dark blue, full height)
+    rg.append("rect")
+      .attr("x",0).attr("y",y)
+      .attr("width", xSc(d.agri_cap)).attr("height", BAR_H)
+      .attr("fill","var(--blue-1)");
+
+    // Excess segment — hatched red on top of base
+    if (d.excess > 0) {
+      rg.append("rect")
+        .attr("x", xSc(d.agri_cap)).attr("y",y)
+        .attr("width", xSc(d.excess)).attr("height", BAR_H)
+        .attr("fill","url(#" + patId + ")");
+    }
+
+    // Better-than-expected — muted blue overlay when agri > fi
+    if (d.better > 0) {
+      rg.append("rect")
+        .attr("x", xSc(d.fi)).attr("y", y + 2)
+        .attr("width", xSc(d.better)).attr("height", BAR_H - 4)
+        .attr("fill","var(--blue-3)").attr("opacity","0.28");
+    }
+
+    // Agricultural employment — thinner lighter bar overlaid
+    rg.append("rect")
+      .attr("x",0).attr("y", y + offset)
+      .attr("width", xSc(d.ae)).attr("height", barH2)
+      .attr("fill","var(--blue-4)").attr("opacity","0.7");
+
+    // Country name label
+    rg.append("text")
+      .attr("x",-5).attr("y", y + BAR_H / 2 + 1)
+      .attr("text-anchor","end").attr("dominant-baseline","middle")
+      .attr("fill", d.excess > 12 ? "#C01B2D" : "var(--ink)")
+      .attr("font-family","'Source Sans 3',sans-serif")
+      .attr("font-size","8.5px")
+      .attr("font-weight", d.excess > 12 ? "600" : "400")
+      .text(d.c);
+
+    // Vertical tick at total food insecurity value
+    rg.append("line")
+      .attr("x1", xSc(d.fi)).attr("x2", xSc(d.fi))
+      .attr("y1", y).attr("y2", y + BAR_H)
+      .attr("stroke","var(--ink)").attr("stroke-width","1.2").attr("opacity","0.6");
+  });
+
+  // Average FI dashed reference line
+  const avgFI = d3.mean(countries, d => d.fi);
+  g.append("line")
+    .attr("x1", xSc(avgFI)).attr("x2", xSc(avgFI))
+    .attr("y1",-10).attr("y2", IH)
+    .attr("stroke","var(--ink)").attr("stroke-width","1")
+    .attr("stroke-dasharray","3 3").attr("opacity","0.25");
+}
+
+// ── GLOBAL SORT HANDLER ──────────────────────────
+window.sortFIAll = function(key, btn) {
+  fiSortKey = key;
+  document.querySelectorAll(".sort-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  redrawAllPanels();
+};
+
+// ── INIT ────────────────────────────────────────
+window.addEventListener("load", function() {
+  buildFIOpt4();
+});
+
+window.addEventListener("resize", function() {
+  clearTimeout(window._fiRt);
+  window._fiRt = setTimeout(function() {
+    redrawAllPanels();
+  }, 150);
+});
+
+})();
+</script>
 </body>
 </html>
