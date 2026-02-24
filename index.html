@@ -671,7 +671,14 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
       </div>
     </div>
     <div style="display:flex;gap:2rem;flex-wrap:wrap;padding:0.7rem 0 0;font-size:0.68rem;color:var(--grey-2);border-top:1px solid var(--grey-4);margin-top:0.5rem;align-items:center;">
-      <span style="letter-spacing:0.06em;">Arc width = trade volume &nbsp;·&nbsp; Click any highlighted country to explore flows</span>
+      <span style="display:flex;align-items:center;gap:0.5rem;">
+        <svg width="38" height="10" style="flex-shrink:0;overflow:visible;">
+          <line x1="0" y1="5" x2="38" y2="5" stroke="#FFD700" stroke-width="1.5" opacity="0.7"/>
+          <line x1="0" y1="5" x2="38" y2="5" stroke="#FFD700" stroke-width="4" opacity="0.4" x1="0" x2="38"/>
+          <line x1="40" y1="5" x2="78" y2="5" stroke="#FFD700" stroke-width="8" opacity="0.5" transform="translate(2,0)"/>
+        </svg>
+        <span style="letter-spacing:0.06em;"><span style="color:#FFD700;font-weight:600;">Yellow lines</span> = trade flows &nbsp;·&nbsp; <strong style="color:var(--grey-1);">Line thickness</strong> = volume (Mt) &nbsp;·&nbsp; Click any highlighted country to explore flows</span>
+      </span>
       <span style="margin-left:auto;font-style:italic;">Sources: UN Comtrade · FAOSTAT 2022–23</span>
     </div>
   </div>
@@ -1361,27 +1368,34 @@ window.addEventListener("scroll", ()=>{
     const borders=topojson.mesh(worldData,worldData.objects.countries,(a,b)=>a!==b);
 
     landLayer.selectAll("*").remove();
+    // Add a subtle land-texture defs gradient for inactive countries
+    const ldDefs=svg.select("defs").empty()?svg.append("defs"):svg.select("defs");
+    if(ldDefs.select("#ch3-land-inactive").empty()){
+      const lg=ldDefs.append("linearGradient").attr("id","ch3-land-inactive").attr("x1","0%").attr("y1","0%").attr("x2","0%").attr("y2","100%");
+      lg.append("stop").attr("offset","0%").attr("stop-color","#1E2D45");
+      lg.append("stop").attr("offset","100%").attr("stop-color","#162236");
+    }
     landLayer.selectAll(".country").data(countries_feat.features).enter().append("path")
       .attr("class","country").attr("d",path)
       .attr("fill",d=>{
         const iso=idMap[String(d.id).padStart(3,"0")];
-        if(iso===selectedCountry) return hexA(color,0.22);
-        if(activeCodes.has(iso)) return "#12182A";
-        return "#0A0E1A";
+        if(iso===selectedCountry) return hexA(color,0.55);  // selected: strong commodity tint
+        if(activeCodes.has(iso)) return "#2A3F5E";          // trade participant: clearly visible mid-blue
+        return "#1A2840";                                    // inactive: still visible, distinctly different from sky
       })
-      .attr("stroke","#0D1220").attr("stroke-width","0.35")
+      .attr("stroke","#4A6080").attr("stroke-width","0.6")  // brighter, thicker borders
       .style("cursor",d=>{const iso=idMap[String(d.id).padStart(3,"0")];return activeCodes.has(iso)?"pointer":"default";})
       .on("mouseover",function(ev,d){
         const iso=idMap[String(d.id).padStart(3,"0")];
         if(!activeCodes.has(iso))return;
-        if(iso!==selectedCountry) d3.select(this).attr("fill",hexA(color,0.14));
+        if(iso!==selectedCountry) d3.select(this).attr("fill",hexA(color,0.40));
         const nm=nameMap[iso];
         if(nm){ const cd=commodities[currentComm].countryData[iso]; showTip(ev,nm,cd?`${cd.role} · click to explore`:"Click to explore trade flows",color); }
       })
       .on("mousemove",moveTip)
       .on("mouseout",function(ev,d){
         const iso=idMap[String(d.id).padStart(3,"0")];
-        if(iso!==selectedCountry) d3.select(this).attr("fill",activeCodes.has(iso)?"#12182A":"#0A0E1A");
+        if(iso!==selectedCountry) d3.select(this).attr("fill",activeCodes.has(iso)?"#2A3F5E":"#1A2840");
         hideTip();
       })
       .on("click",function(ev,d){
@@ -1391,22 +1405,37 @@ window.addEventListener("scroll", ()=>{
         else{selectedCountry=iso;showPanel(iso,color);}
         render();
       });
-    landLayer.append("path").datum(borders).attr("d",path).attr("fill","none").attr("stroke","#0D1220").attr("stroke-width","0.35");
+    landLayer.append("path").datum(borders).attr("d",path).attr("fill","none").attr("stroke","#4A6080").attr("stroke-width","0.5").attr("opacity","0.7");
 
     // arcs
     arcLayer.selectAll("*").remove();
+    const arcColor="#FFD700"; // yellow for all trade flow lines
     const maxVol=d3.max(flows,d=>d[2]);
-    const wSc=d3.scaleSqrt().domain([0,maxVol]).range([0.5,7]);
+    // wider range so thin vs thick flows are clearly distinguishable
+    const wSc=d3.scaleSqrt().domain([0,maxVol]).range([0.8,11]);
+
+    // glow filter for arc legibility on dark background
+    const arcDefs=svg.select("defs").empty()?svg.append("defs"):svg.select("defs");
+    if(arcDefs.select("#ch3-arc-glow").empty()){
+      const gf=arcDefs.append("filter").attr("id","ch3-arc-glow").attr("x","-20%").attr("y","-20%").attr("width","140%").attr("height","140%");
+      gf.append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation","2.5").attr("result","blur");
+      const gm=gf.append("feMerge");
+      gm.append("feMergeNode").attr("in","blur");
+      gm.append("feMergeNode").attr("in","SourceGraphic");
+    }
+
     flows.forEach(([eISO,iISO,vol])=>{
       const ec=centroids[eISO],ic=centroids[iISO];
       if(!ec||!ic)return;
       const isHl=selectedCountry&&(eISO===selectedCountry||iISO===selectedCountry);
       const isDim=selectedCountry&&!isHl;
       const w=wSc(vol);
-      if(isHl){arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none").attr("stroke",color).attr("stroke-width",w*3.5).attr("stroke-linecap","round").attr("opacity",0.08);}
+      // soft glow halo behind highlighted arcs
+      if(isHl){arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none").attr("stroke",arcColor).attr("stroke-width",w*4).attr("stroke-linecap","round").attr("opacity",0.12).attr("filter","url(#ch3-arc-glow)");}
       arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none")
-        .attr("stroke",color).attr("stroke-width",isHl?w*1.6:w).attr("stroke-linecap","round")
-        .attr("opacity",isDim?0.04:isHl?0.88:0.28).attr("class",isHl?"arc-hl":"");
+        .attr("stroke",arcColor).attr("stroke-width",isHl?w*1.8:w).attr("stroke-linecap","round")
+        .attr("opacity",isDim?0.05:isHl?0.95:0.42).attr("class",isHl?"arc-hl":"")
+        .attr("filter",isHl?"url(#ch3-arc-glow)":null);
     });
 
     // dots
