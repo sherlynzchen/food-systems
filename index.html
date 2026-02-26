@@ -135,6 +135,7 @@ body {
 /* ══ CHAPTER SECTIONS ══ */
 .chapter-section {
   padding-top: 48px; /* nav offset */
+  scroll-margin-top: 48px;
 }
 
 /* chapter header */
@@ -277,11 +278,11 @@ body {
   border-radius:0;
 }
 .comm-btn:hover{color:var(--blue-2);border-color:var(--blue-2);background:var(--blue-6);}
-.comm-btn[data-c="wheat"]   { --cc:#002960; }
-.comm-btn[data-c="soy"]     { --cc:#0D5EA6; }
-.comm-btn[data-c="rice"]    { --cc:#307FBF; }
-.comm-btn[data-c="palmoil"] { --cc:#1A4A80; }
-.comm-btn[data-c="maize"]   { --cc:#5A9BC0; }
+.comm-btn[data-c="wheat"]   { --cc:#D4820A; }
+.comm-btn[data-c="soy"]     { --cc:#B85C00; }
+.comm-btn[data-c="rice"]    { --cc:#E8A020; }
+.comm-btn[data-c="palmoil"] { --cc:#C06010; }
+.comm-btn[data-c="maize"]   { --cc:#F0BC50; }
 .comm-btn .cdot{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--cc);margin-right:6px;vertical-align:middle;}
 .comm-btn.active{color:var(--white);border-color:var(--cc);background:var(--cc);font-weight:600;}
 
@@ -424,6 +425,32 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 .footer-note{font-size:0.72rem;color:rgba(255,255,255,0.4);line-height:1.6;margin-top:1.5rem;}
 @media(max-width:600px){.footer-inner{grid-template-columns:1fr;}}
 
+/* ══ SECTION BANNERS ══ */
+.section-banner {
+  background: var(--ink);
+  border-top: 3px solid var(--blue-4);
+  padding: 1.8rem 5vw;
+  scroll-margin-top: 48px;
+}
+.section-banner-inner {
+  max-width: 1400px; margin: 0 auto;
+  display: flex; align-items: baseline; gap: 2rem; flex-wrap: wrap;
+}
+.section-banner-num {
+  font-size: 0.58rem; letter-spacing: 0.28em; text-transform: uppercase;
+  color: var(--blue-4); font-weight: 600; white-space: nowrap; flex-shrink: 0;
+}
+.section-banner-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: clamp(1rem, 2vw, 1.35rem);
+  font-weight: 700; color: var(--white); line-height: 1.2;
+  flex-shrink: 0;
+}
+.section-banner-desc {
+  font-size: 0.78rem; color: rgba(255,255,255,0.45);
+  font-weight: 300; line-height: 1.5;
+}
+
 /* ══ CH6 FOOD INSECURITY — OPTION TABS ══ */
 .opt-tabs-bar {
   background: var(--blue-1);
@@ -529,6 +556,183 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 @media (max-width: 700px) {
   .sm-grid { grid-template-columns: 1fr; }
 }
+
+/* ══ CH1B — SUPPLY VS REQUIREMENT SMALL MULTIPLES ══ */
+.ch1b-header-row {
+  display: flex; justify-content: flex-end;
+  margin-bottom: 0.6rem;
+}
+.ch1b-legend {
+  display: flex; gap: 1.4rem; align-items: center;
+}
+.ch1b-leg-item {
+  display: flex; align-items: center; gap: 0.45rem;
+  font-size: 0.75rem; color: var(--grey-1); font-family: 'Source Sans 3', sans-serif;
+}
+.ch1b-leg-line {
+  display: inline-block; width: 22px; height: 2.5px; border-radius: 2px;
+}
+.ch1b-leg-line.supply     { background: #002960; }
+.ch1b-leg-line.requirement { background: #5BB8E0; }
+.ch1b-panels {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+  border-top: 1px solid var(--grey-3);
+}
+.ch1b-panel {
+  padding: 1.2rem 1.4rem 0.6rem;
+  border-right: 1px solid var(--grey-4);
+  position: relative;
+}
+.ch1b-panel:last-child { border-right: none; }
+.ch1b-panel-title {
+  font-size: 0.82rem; font-weight: 700; color: var(--ink);
+  line-height: 1.3; margin-bottom: 0.15rem;
+}
+.ch1b-panel-unit {
+  font-size: 0.72rem; color: var(--grey-2); font-weight: 300; margin-bottom: 0.7rem;
+}
+.ch1b-panel-note {
+  font-size: 0.65rem; color: var(--grey-2); font-weight: 300;
+  line-height: 1.5; margin-top: 0.7rem; max-width: 220px;
+}
+.ch1b-svg { display: block; width: 100%; overflow: visible; }
+@media (max-width: 700px) {
+  .ch1b-panels { grid-template-columns: 1fr; }
+  .ch1b-panel { border-right: none; border-bottom: 1px solid var(--grey-4); }
+}
+
+/* ══ CH-PLATE — SCROLLYTELLING ══ */
+.plate-scroll-outer {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  min-height: 400vh;
+}
+.plate-scroll-sticky {
+  position: sticky;
+  top: 52px;
+  height: calc(100vh - 52px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--grey-5);
+  border-right: 1px solid var(--grey-4);
+  overflow: hidden;
+}
+#plate-scroll-svg {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+}
+.plate-steps {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: 12vh 2rem 12vh;
+  gap: 0;
+}
+.plate-step {
+  min-height: 70vh;
+  display: flex;
+  align-items: center;
+}
+.plate-step[data-step="1"] { min-height: 120vh; }
+.plate-step[data-step="2"] { min-height: 120vh; }
+.plate-card {
+  background: var(--white);
+  border: 1px solid var(--grey-4);
+  border-left: 3px solid var(--blue-4);
+  padding: 1.4rem 1.6rem;
+  box-shadow: 0 2px 12px rgba(5,28,44,0.06);
+  opacity: 0.42;
+  transform: translateY(8px);
+  transition: opacity 0.35s, transform 0.35s, border-color 0.3s;
+}
+.plate-step.active .plate-card {
+  opacity: 1;
+  transform: translateY(0);
+  border-left-color: var(--blue-2);
+  box-shadow: 0 4px 20px rgba(5,28,44,0.12);
+}
+.plate-card-eyebrow {
+  font-size: 0.58rem; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--blue-2); font-weight: 700; margin-bottom: 0.5rem;
+  font-family: 'Source Sans 3', sans-serif;
+}
+.plate-card-title {
+  font-family: 'Libre Baskerville', serif;
+  font-size: 1.05rem; font-weight: 700; color: var(--ink);
+  line-height: 1.3; margin-bottom: 0.65rem;
+}
+.plate-card-body {
+  font-size: 0.8rem; color: var(--grey-1); line-height: 1.65;
+  font-family: 'Source Sans 3', sans-serif;
+}
+
+/* Voronoi overlay — kept from previous */
+.plate-voronoi-overlay {
+  display: none; position: fixed; inset: 0; z-index: 2000;
+  background: rgba(5,28,44,0.82); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center;
+}
+.plate-voronoi-overlay.active { display: flex; }
+.plate-voronoi-inner {
+  background: var(--white); width: min(860px,95vw); max-height: 90vh;
+  overflow-y: auto; border-top: 3px solid var(--blue-2);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  padding: 1.6rem 2rem 1.4rem; position: relative;
+}
+.plate-voronoi-close {
+  position: absolute; top: 1rem; right: 1.2rem;
+  background: none; border: 1px solid var(--grey-3);
+  color: var(--grey-1); font-size: 0.72rem; letter-spacing: 0.1em;
+  text-transform: uppercase; padding: 0.3rem 0.7rem; cursor: pointer;
+  font-family: 'Source Sans 3',sans-serif; transition: all 0.15s;
+}
+.plate-voronoi-close:hover { border-color: var(--ink); color: var(--ink); }
+.plate-voronoi-header { margin-bottom: 1rem; }
+.plate-voronoi-country {
+  font-family: 'Libre Baskerville',serif;
+  font-size: 1.35rem; font-weight: 700; color: var(--ink);
+}
+.plate-voronoi-kcal { font-size: 0.8rem; color: var(--grey-2); margin-top: 0.15rem; }
+.plate-voronoi-chart-wrap {
+  display: grid; grid-template-columns: 1fr 220px; gap: 1.6rem; align-items: start;
+}
+.plate-voronoi-svg { display: block; width: 100%; border-radius: 50%; overflow: hidden; }
+.plate-voronoi-legend { padding-top: 0.4rem; }
+.plate-vleg-group { margin-bottom: 0.9rem; }
+.plate-vleg-group-title {
+  font-size: 0.6rem; letter-spacing: 0.18em; text-transform: uppercase;
+  font-weight: 700; color: var(--ink); margin-bottom: 0.3rem;
+  display: flex; align-items: center; gap: 0.4rem;
+}
+.plate-vleg-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.plate-vleg-item {
+  display: flex; justify-content: space-between;
+  font-size: 0.68rem; color: var(--grey-1);
+  padding: 0.12rem 0 0.12rem 1rem;
+  border-bottom: 1px solid var(--grey-5);
+}
+.plate-vleg-item-pct { font-weight: 600; color: var(--ink); min-width: 32px; text-align: right; }
+.plate-voronoi-tooltip {
+  position: fixed; pointer-events: none;
+  background: var(--ink); color: var(--white);
+  font-size: 0.72rem; font-family: 'Source Sans 3',sans-serif;
+  padding: 0.5rem 0.8rem; border-radius: 2px;
+  opacity: 0; transition: opacity 0.12s; z-index: 3000;
+  max-width: 200px; line-height: 1.5;
+}
+
+@media (max-width: 800px) {
+  .plate-scroll-outer { grid-template-columns: 1fr; }
+  .plate-scroll-sticky { position: relative; top: 0; height: 60vw; }
+  .plate-voronoi-chart-wrap { grid-template-columns: 1fr; }
+}
+
 </style>
 </head>
 <body>
@@ -536,13 +740,11 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 <nav class="site-nav">
   <a class="nav-brand" href="#hero">How the World Eats</a>
   <div class="nav-links">
-    <a class="nav-link" href="#ch1">I. Abundance Paradox</a>
-    <a class="nav-link" href="#ch2">II. Soil Beneath</a>
-    <a class="nav-link" href="#ch3">III. Grain Routes</a>
-    <a class="nav-link" href="#ch4">IV. Price of a Plate</a>
-    <a class="nav-link" href="#ch5">V. Face of Hunger</a>
-    <a class="nav-link" href="#ch7">VI. Paths Forward</a>
-    <a class="nav-link" href="#ch6">VII. Explaining Insecurity</a>
+    <a class="nav-link" href="#section-I">I. Overview</a>
+    <a class="nav-link" href="#section-II">II. Who Goes Hungry</a>
+    <a class="nav-link" href="#section-III">III. Drivers</a>
+    <a class="nav-link" href="#section-IV">IV. Role of Trade</a>
+    <a class="nav-link" href="#section-V">V. Future of Food</a>
   </div>
   <div class="nav-progress" id="nav-progress"></div>
 </nav>
@@ -564,25 +766,33 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
   </svg>
   <div class="hero-kicker">A data-driven charticle</div>
   <h1 class="hero-title">How the<br><em>World Eats</em></h1>
-  <p class="hero-subtitle">The world grows enough calories to feed every person alive. Yet 282 million go to bed hungry every night. This is the story of abundance, inequality, and the levers we haven't pulled.</p>
+  <p class="hero-subtitle">The global food system has achieved something remarkable — feeding eight billion people, with output growing faster than population since the 1960s. Yet 733 million go hungry. This is the story of a system that works, and the places where it still fails.</p>
   <div class="hero-meta">
-    <span class="hero-meta-item">6 chapters</span>
-    <span class="hero-meta-item">6 interactive visualisations</span>
-    <span class="hero-meta-item">Sources: FAO · WFP · UN Comtrade · FAOSTAT · FSIN</span>
+    <span class="hero-meta-item">5 sections</span>
+    <span class="hero-meta-item">15 storyline points</span>
+    <span class="hero-meta-item">Sources: FAO · WFP · UN Comtrade · FAOSTAT · FSIN · ILO</span>
   </div>
   <div class="hero-scroll-hint">scroll to begin ↓</div>
 </section>
 
 <!-- ══════════════════════════════════════════════
-     CHAPTER 1 — THE ABUNDANCE PARADOX
+     SECTION I BANNER
 ══════════════════════════════════════════════ -->
+<div class="section-banner" id="section-I">
+  <div class="section-banner-inner">
+    <div class="section-banner-num">Section I of V</div>
+    <div class="section-banner-title">Overview of the Global Food System</div>
+    <div class="section-banner-desc">Points 0–3 · How output, land use, and labour have changed since 1960</div>
+  </div>
+</div>
+
 <section class="chapter-section" id="ch1">
   <div class="chapter-header">
     <div>
-      <div class="chapter-label">Chapter I — The Abundance Paradox</div>
+      <div class="chapter-label">I. Overview — The Global Food System</div>
       <h2 class="chapter-h2">The world grows enough<br>to feed everyone.<br><em>So why doesn't it?</em></h2>
     </div>
-    <p class="chapter-lede">Every year, humanity produces over 9,800 trillion calories — enough for every person alive. Yet a third never becomes food. Follow the flow from field to fate.</p>
+    <p class="chapter-lede">The primary goal of any food system is simple: feed people affordably and reliably, while delivering incomes for those who work in it. Global output has outpaced population growth since the 1960s — yet the system still fails hundreds of millions. Follow the flow from field to fate.</p>
   </div>
   <div class="chapter-body">
     <div class="ch1-vis">
@@ -609,6 +819,34 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
     <p class="section-footnote">Sources: FAO Food Balance Sheets 2022 · WRAP Global Food Waste Assessment · IFPRI · Data illustrative based on published ranges.</p>
   </div>
 </section>
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 1b — SUPPLY VS REQUIREMENT
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch1b">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">I. Overview — Supply vs Requirement</div>
+      <h2 class="chapter-h2">Global supply of calories,<br>protein and fat has<br><em>outpaced requirements.</em></h2>
+    </div>
+    <p class="chapter-lede">Since 1961, global food supply has grown at +2.1–2.6% per year across all three macronutrients — consistently outpacing the ~1.6% annual population growth rate. The gap between supply and nutritional requirement has widened every decade.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch1b-header-row">
+      <div class="ch1b-legend">
+        <span class="ch1b-leg-item"><span class="ch1b-leg-line supply"></span>Supply</span>
+        <span class="ch1b-leg-item"><span class="ch1b-leg-line requirement"></span>Requirement</span>
+      </div>
+    </div>
+    <div class="ch1b-panels" id="ch1b-panels"></div>
+    <p class="section-footnote" style="margin-top:1.2rem;">
+      <sup>1</sup> Based on Recommended Dietary Allowance (RDA) from <em>Dietary Reference Intakes (DRIs)</em>, average adult aged 19–30.&nbsp;
+      <sup>2</sup> Based on 2020–2025 Dietary Guidelines for Americans: 20–35% of daily calories from fat (~44–80 g on a 2,000-cal diet).
+      &nbsp;·&nbsp; Sources: FAOSTAT Food Balance Sheets · UN World Population Prospects 2024 · MGI analysis.
+    </p>
+  </div>
+</section>
 
 <hr class="chapter-divider">
 
@@ -618,10 +856,10 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 <section class="chapter-section" id="ch2">
   <div class="chapter-header">
     <div>
-      <div class="chapter-label">Chapter II — The Soil Beneath Everything</div>
+      <div class="chapter-label">I. Overview — Land &amp; Labour Productivity</div>
       <h2 class="chapter-h2">Every breakthrough<br>carried a <em>hidden invoice.</em></h2>
     </div>
-    <p class="chapter-lede">Ten thousand years of agricultural history on a single spine. Branch width = yield impact. Branch colour = ecological cost. Hover any branch to read the trade-off story.</p>
+    <p class="chapter-lede">Output growth has been driven by both land and labour productivity. Agricultural land use has levelled off, while the global agricultural workforce has fallen 15% since peaking in 2002 — yet productivity gains have come with significant ecological costs. Hover any branch to read the trade-off.</p>
   </div>
   <div class="chapter-body">
     <div class="ch2-vis">
@@ -634,90 +872,91 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 <hr class="chapter-divider">
 
 <!-- ══════════════════════════════════════════════
-     CHAPTER 3 — WHERE FOOD COMES FROM
+     CHAPTER PLATE — WHAT'S ON YOUR PLATE? (scrollytelling)
 ══════════════════════════════════════════════ -->
-<section class="chapter-section" id="ch3">
+<section class="chapter-section" id="ch-plate">
   <div class="chapter-header">
     <div>
-      <div class="chapter-label">Chapter III — Where Food Comes From</div>
-      <h2 class="chapter-h2">The grain routes<br>of a hungry <em>world</em></h2>
+      <div class="chapter-label">I. Overview — What's On Your Plate?</div>
+      <h2 class="chapter-h2">A world of<br>difference on<br><em>every plate.</em></h2>
     </div>
-    <p class="chapter-lede">Five commodities. Hundreds of trade lanes. A handful of nations hold what the world eats. Click any glowing country to trace its full web of supply and demand.</p>
+    <p class="chapter-lede">The size of a daily food supply varies enormously by region — and has grown almost everywhere since 2010. Scroll to see how plates changed, and how wide the gap within each region really is. Click any circle to see what's on it.</p>
   </div>
-  <div class="chapter-body">
-    <div class="ch3-controls">
-      <span style="font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--grey-2);font-weight:600;align-self:center;">Commodity</span>
-      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
-        <button class="comm-btn active" data-c="wheat"   onclick="ch3SetCommodity('wheat',this)"><span class="cdot"></span>Wheat</button>
-        <button class="comm-btn" data-c="soy"    onclick="ch3SetCommodity('soy',this)"><span class="cdot"></span>Soybean</button>
-        <button class="comm-btn" data-c="rice"   onclick="ch3SetCommodity('rice',this)"><span class="cdot"></span>Rice</button>
-        <button class="comm-btn" data-c="palmoil" onclick="ch3SetCommodity('palmoil',this)"><span class="cdot"></span>Palm Oil</button>
-        <button class="comm-btn" data-c="maize"  onclick="ch3SetCommodity('maize',this)"><span class="cdot"></span>Maize</button>
+  <div class="chapter-body" style="padding:0;">
+
+    <div class="plate-scroll-outer" id="plate-scroll-outer">
+
+      <!-- Sticky visualisation -->
+      <div class="plate-scroll-sticky" id="plate-scroll-sticky">
+        <svg id="plate-scroll-svg"></svg>
       </div>
-    </div>
-    <div class="ch3-map-wrap">
-      <div id="ch3-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;letter-spacing:0.2em;color:var(--grey-2);text-transform:uppercase;background:var(--grey-5);z-index:5;">Loading world map…</div>
-      <svg id="ch3-svg"></svg>
-      <div class="ch3-panel" id="ch3-panel">
-        <button class="ch3-panel-close" id="ch3-panel-close">✕</button>
-        <div class="ch3-panel-name" id="ch3-pname"></div>
-        <div class="ch3-panel-role" id="ch3-prole"></div>
-        <div class="ch3-panel-nums">
-          <div><div class="ch3-num-lbl">Exports</div><div class="ch3-num-val" id="ch3-pexp">—<span class="ch3-num-unit"> Mt</span></div></div>
-          <div><div class="ch3-num-lbl">Imports</div><div class="ch3-num-val" id="ch3-pimp">—<span class="ch3-num-unit"> Mt</span></div></div>
+
+      <!-- Step cards -->
+      <div class="plate-steps" id="plate-steps">
+
+        <div class="plate-step active" data-step="0">
+          <div class="plate-card">
+            <div class="plate-card-eyebrow">Step 1 of 3</div>
+            <div class="plate-card-title">The world in 2010</div>
+            <div class="plate-card-body">Ten regions, ranked left to right by average daily calories available per person. The lightest circles are the least calorie-rich; the darkest are the most. India and Sub-Saharan Africa anchor the left. North America sits alone on the right.</div>
+          </div>
         </div>
-        <div class="ch3-partners-lbl">Top partners</div>
-        <div id="ch3-ppartners"></div>
+
+        <div class="plate-step" data-step="1">
+          <div class="plate-card">
+            <div class="plate-card-eyebrow">Step 2 of 3</div>
+            <div class="plate-card-title">By 2023, almost every plate has grown</div>
+            <div class="plate-card-body">Thirteen years of output growth, trade expansion, and rising incomes have added calories across nearly every region. Sub-Saharan Africa and India have gained the most proportionally — but still lag far behind the richest regions.</div>
+          </div>
+        </div>
+
+        <div class="plate-step" data-step="2">
+          <div class="plate-card">
+            <div class="plate-card-eyebrow">Step 3 of 3</div>
+            <div class="plate-card-title">The average hides a vast range</div>
+            <div class="plate-card-body">Within each region, the gap between the lowest- and highest-calorie countries is enormous. In MENA, the spread is nearly 1,600 kcal/day. Even within the EU30, one country's minimum is another's maximum. The average is not the story.</div>
+          </div>
+        </div>
+
+      </div><!-- /.plate-steps -->
+    </div><!-- /.plate-scroll-outer -->
+
+    <!-- Voronoi overlay -->
+    <div class="plate-voronoi-overlay" id="plate-voronoi-overlay">
+      <div class="plate-voronoi-inner">
+        <button class="plate-voronoi-close" id="plate-voronoi-close">&#x2715; Close</button>
+        <div class="plate-voronoi-header">
+          <div class="plate-voronoi-country" id="plate-voronoi-country"></div>
+          <div class="plate-voronoi-kcal" id="plate-voronoi-kcal"></div>
+        </div>
+        <div class="plate-voronoi-chart-wrap">
+          <svg class="plate-voronoi-svg" id="plate-voronoi-svg"></svg>
+          <div class="plate-voronoi-legend" id="plate-voronoi-legend"></div>
+        </div>
+        <div class="plate-voronoi-tooltip" id="plate-voronoi-tooltip"></div>
       </div>
     </div>
-    <div style="display:flex;gap:2rem;flex-wrap:wrap;padding:0.7rem 0 0;font-size:0.68rem;color:var(--grey-2);border-top:1px solid var(--grey-4);margin-top:0.5rem;align-items:center;">
-      <span style="display:flex;align-items:center;gap:0.5rem;">
-        <svg width="38" height="10" style="flex-shrink:0;overflow:visible;">
-          <line x1="0" y1="5" x2="38" y2="5" stroke="#FFD700" stroke-width="1.5" opacity="0.7"/>
-          <line x1="0" y1="5" x2="38" y2="5" stroke="#FFD700" stroke-width="4" opacity="0.4" x1="0" x2="38"/>
-          <line x1="40" y1="5" x2="78" y2="5" stroke="#FFD700" stroke-width="8" opacity="0.5" transform="translate(2,0)"/>
-        </svg>
-        <span style="letter-spacing:0.06em;"><span style="color:#FFD700;font-weight:600;">Yellow lines</span> = trade flows &nbsp;·&nbsp; <strong style="color:var(--grey-1);">Line thickness</strong> = volume (Mt) &nbsp;·&nbsp; Click any highlighted country to explore flows</span>
-      </span>
-      <span style="margin-left:auto;font-style:italic;">Sources: UN Comtrade · FAOSTAT 2022–23</span>
-    </div>
+
+    <!-- Scroll tooltip -->
+    <div id="plate-scroll-tip" style="position:fixed;pointer-events:none;background:var(--ink);color:var(--white);font-family:'Source Sans 3',sans-serif;font-size:0.72rem;padding:0.45rem 0.75rem;border-radius:2px;opacity:0;transition:opacity 0.12s;z-index:3000;max-width:240px;line-height:1.5;"></div>
+
+    <p class="section-footnote" style="padding:0.8rem 1.8rem 1.2rem;">
+      Sources: FAOSTAT Food Balance Sheets 2010 &amp; 2023 · Data illustrative, based on published ranges.
+      Regions follow McKinsey Global Institute classification. 2023 min/max illustrative.
+    </p>
   </div>
 </section>
-
-<hr class="chapter-divider">
 
 <!-- ══════════════════════════════════════════════
-     CHAPTER 4 — THE PRICE OF A PLATE
+     SECTION II BANNER
 ══════════════════════════════════════════════ -->
-<section class="chapter-section" id="ch4">
-  <div class="chapter-header">
-    <div>
-      <div class="chapter-label">Chapter IV — The Price of a Plate</div>
-      <h2 class="chapter-h2">For the poorest,<br>food is not a choice.<br><em>It is the choice.</em></h2>
-    </div>
-    <p class="chapter-lede">In wealthy nations, households spend 10–15% of income on food. In the most vulnerable countries, that figure exceeds 60%. Hover any bubble to see the cost of a basic food basket.</p>
+<div class="section-banner" id="section-II">
+  <div class="section-banner-inner">
+    <div class="section-banner-num">Section II of V</div>
+    <div class="section-banner-title">Where Issues Remain — Who Goes Hungry</div>
+    <div class="section-banner-desc">Points 4–7 · Hunger today: scale, geography, and drivers</div>
   </div>
-  <div class="chapter-body">
-    <div class="ch4-vis">
-      <svg id="ch4-svg"></svg>
-    </div>
-    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;padding:1rem 0 0;border-top:1px solid var(--grey-4);">
-      <div>
-        <div style="font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;">Region</div>
-        <div id="ch4-region-legend" style="display:flex;gap:0.8rem;flex-wrap:wrap;"></div>
-      </div>
-      <div>
-        <div style="font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;">Bubble size = affected population</div>
-        <div style="display:flex;gap:0.8rem;align-items:center;font-size:0.72rem;color:var(--grey-2);">
-          <span>● Small &lt;5M</span><span>● Medium 20M</span><span>● Large 100M+</span>
-        </div>
-      </div>
-      <div style="margin-left:auto;font-size:0.65rem;color:var(--grey-2);font-style:italic;text-align:right;">
-        Sources: FAO FIES · World Bank ICP · ILO surveys · 2022–23
-      </div>
-    </div>
-  </div>
-</section>
+</div>
 
 <hr class="chapter-divider">
 
@@ -727,12 +966,12 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 <section class="chapter-section" id="ch5">
   <div class="chapter-header full">
     <div>
-      <div class="chapter-label">Chapter V — Who Goes Hungry</div>
+      <div class="chapter-label">II. Where Issues Remain — Who Goes Hungry</div>
       <h2 class="chapter-h2">282 million faces.<br>One <em>constellation</em> of causes.</h2>
     </div>
   </div>
   <div style="max-width:1400px;margin:0 auto;padding:0.5rem 5vw 0;">
-    <p class="narrative" style="margin:0 0 0;">Each dot below is one million people in acute food insecurity. Scroll through the five frames to watch them re-sort by driver — conflict, climate, economics, poverty — and finally by how many forces act on the same person simultaneously.</p>
+    <p class="narrative" style="margin:0 0 0;">Despite producing sufficient food globally, 40% of the world lives in places where average calorie consumption falls below healthy diet thresholds. 28% of people worldwide experience food insecurity. Each dot below represents one million people in acute food crisis. Scroll through to watch them re-sort by driver.</p>
   </div>
   <div class="ch5-scroll-outer" id="ch5-scroll-outer">
     <div class="ch5-sticky" id="ch5-sticky">
@@ -801,6 +1040,167 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
   </div>
 </section>
 
+<!-- ══════════════════════════════════════════════
+     SECTION III BANNER
+══════════════════════════════════════════════ -->
+<div class="section-banner" id="section-III">
+  <div class="section-banner-inner">
+    <div class="section-banner-num">Section III of V</div>
+    <div class="section-banner-title">Drivers of Food Insecurity</div>
+    <div class="section-banner-desc">Points 8–10 · Agricultural labour productivity, affordability, and the structural gap</div>
+  </div>
+</div>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 4 — THE PRICE OF A PLATE
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch4">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">III. Drivers — Affordability &amp; Agricultural Labour</div>
+      <h2 class="chapter-h2">For the poorest,<br>food is not a choice.<br><em>It is the choice.</em></h2>
+    </div>
+    <p class="chapter-lede">Food insecurity is highest in countries with low agricultural labour productivity. Because actual food expenditure varies far less than income, low-productivity countries spend a far greater share of earnings on food — leaving little margin for income volatility. Hover any bubble for the food basket breakdown.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch4-vis">
+      <svg id="ch4-svg"></svg>
+    </div>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;align-items:flex-start;padding:1rem 0 0;border-top:1px solid var(--grey-4);">
+      <div>
+        <div style="font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;">Region</div>
+        <div id="ch4-region-legend" style="display:flex;gap:0.8rem;flex-wrap:wrap;"></div>
+      </div>
+      <div>
+        <div style="font-size:0.58rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--grey-2);font-weight:600;margin-bottom:0.4rem;">Bubble size = affected population</div>
+        <div style="display:flex;gap:0.8rem;align-items:center;font-size:0.72rem;color:var(--grey-2);">
+          <span>● Small &lt;5M</span><span>● Medium 20M</span><span>● Large 100M+</span>
+        </div>
+      </div>
+      <div style="margin-left:auto;font-size:0.65rem;color:var(--grey-2);font-style:italic;text-align:right;">
+        Sources: FAO FIES · World Bank ICP · ILO surveys · 2022–23
+      </div>
+    </div>
+  </div>
+</section>
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 6 — EXPLAINING FOOD INSECURITY
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch6">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">III. Drivers — The Structural Gap</div>
+      <h2 class="chapter-h2">Agricultural employment<br><em>explains most</em> food insecurity.<br>But not all of it.</h2>
+    </div>
+    <p class="chapter-lede">While agricultural workers are more likely to experience food insecurity than non-agricultural workers, a substantial share remains unexplained by low wages alone — particularly in low- and middle-income countries. The chart below shows this gap by income group.</p>
+  </div>
+
+  <div class="chapter-body">
+    <!-- Legend from Opt A — full three-item version -->
+    <div class="agri-legend">
+      <div class="agri-leg-item">
+        <div class="agri-leg-swatch" style="background:#002960;"></div>
+        <div class="agri-leg-label"><strong>Agricultural employment share</strong> — baseline "explained" food insecurity</div>
+      </div>
+      <div class="agri-leg-item">
+        <div class="agri-leg-swatch stripe"></div>
+        <div class="agri-leg-label"><strong>Excess food insecurity</strong> — beyond what agri employment predicts</div>
+      </div>
+      <div class="agri-leg-item">
+        <div class="agri-leg-swatch" style="background:#7EC8E3; opacity:0.85;"></div>
+        <div class="agri-leg-label"><strong>Agricultural employment %</strong> — overlaid thinner bar</div>
+      </div>
+      <div class="agri-leg-item" style="margin-left:auto;">
+        <span class="agri-leg-label" style="font-style:italic;">Hover any bar for detail</span>
+      </div>
+    </div>
+
+    <!-- Sort controls — apply to all four income panels simultaneously -->
+    <div class="sort-controls">
+      <span class="sort-lbl">Sort within each group by</span>
+      <button class="sort-btn active" id="fi-sort-excess" onclick="sortFIAll('excess',this)">Excess gap ↓</button>
+      <button class="sort-btn" id="fi-sort-total"  onclick="sortFIAll('total',this)">Total food insecurity ↓</button>
+      <button class="sort-btn" id="fi-sort-agri"   onclick="sortFIAll('agri',this)">Agri employment ↓</button>
+    </div>
+
+    <div class="sm-grid" id="sm-grid"></div>
+
+    <p class="section-footnote" style="margin-top:1rem;">Sources: FAO FIES 2022 · ILO Employment by sector 2022 · World Bank income classification 2023 · Data illustrative, based on published ranges. "Excess" = food insecurity % minus agricultural employment %, floored at 0.</p>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION IV BANNER
+══════════════════════════════════════════════ -->
+<div class="section-banner" id="section-IV">
+  <div class="section-banner-inner">
+    <div class="section-banner-num">Section IV of V</div>
+    <div class="section-banner-title">The Role of Trade</div>
+    <div class="section-banner-desc">Points 11–13 · How global trade shapes food security — and vulnerability</div>
+  </div>
+</div>
+
+<hr class="chapter-divider">
+
+<!-- ══════════════════════════════════════════════
+     CHAPTER 3 — WHERE FOOD COMES FROM
+══════════════════════════════════════════════ -->
+<section class="chapter-section" id="ch3">
+  <div class="chapter-header">
+    <div>
+      <div class="chapter-label">IV. The Role of Trade — Global Grain Routes</div>
+      <h2 class="chapter-h2">The grain routes<br>of a hungry <em>world</em></h2>
+    </div>
+    <p class="chapter-lede">Food represents roughly 10% of global trade, and the share of food that is traded has grown 2.6× since 1961. Agriculture and food &amp; beverage are among the most highly concentrated sectors in global trade — a handful of countries feed the world. Click any glowing country to trace its supply and demand web.</p>
+  </div>
+  <div class="chapter-body">
+    <div class="ch3-controls">
+      <span style="font-size:0.6rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--grey-2);font-weight:600;align-self:center;">Commodity</span>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;">
+        <button class="comm-btn active" data-c="wheat"   onclick="ch3SetCommodity('wheat',this)"><span class="cdot"></span>Wheat</button>
+        <button class="comm-btn" data-c="soy"    onclick="ch3SetCommodity('soy',this)"><span class="cdot"></span>Soybean</button>
+        <button class="comm-btn" data-c="rice"   onclick="ch3SetCommodity('rice',this)"><span class="cdot"></span>Rice</button>
+        <button class="comm-btn" data-c="palmoil" onclick="ch3SetCommodity('palmoil',this)"><span class="cdot"></span>Palm Oil</button>
+        <button class="comm-btn" data-c="maize"  onclick="ch3SetCommodity('maize',this)"><span class="cdot"></span>Maize</button>
+      </div>
+    </div>
+    <div class="ch3-map-wrap">
+      <div id="ch3-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.72rem;letter-spacing:0.2em;color:var(--grey-2);text-transform:uppercase;background:var(--grey-5);z-index:5;">Loading world map…</div>
+      <svg id="ch3-svg"></svg>
+      <div class="ch3-panel" id="ch3-panel">
+        <button class="ch3-panel-close" id="ch3-panel-close">✕</button>
+        <div class="ch3-panel-name" id="ch3-pname"></div>
+        <div class="ch3-panel-role" id="ch3-prole"></div>
+        <div class="ch3-panel-nums">
+          <div><div class="ch3-num-lbl">Exports</div><div class="ch3-num-val" id="ch3-pexp">—<span class="ch3-num-unit"> Mt</span></div></div>
+          <div><div class="ch3-num-lbl">Imports</div><div class="ch3-num-val" id="ch3-pimp">—<span class="ch3-num-unit"> Mt</span></div></div>
+        </div>
+        <div class="ch3-partners-lbl">Top partners</div>
+        <div id="ch3-ppartners"></div>
+      </div>
+    </div>
+    <div style="display:flex;gap:2rem;flex-wrap:wrap;padding:0.7rem 0 0;font-size:0.68rem;color:var(--grey-2);border-top:1px solid var(--grey-4);margin-top:0.5rem;align-items:center;">
+      <span style="letter-spacing:0.06em;">Arc width = trade volume &nbsp;·&nbsp; Click any highlighted country to explore flows</span>
+      <span style="margin-left:auto;font-style:italic;">Sources: UN Comtrade · FAOSTAT 2022–23</span>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════════════════════════════════
+     SECTION V BANNER
+══════════════════════════════════════════════ -->
+<div class="section-banner" id="section-V">
+  <div class="section-banner-inner">
+    <div class="section-banner-num">Section V of V</div>
+    <div class="section-banner-title">The Future of Food</div>
+    <div class="section-banner-desc">Points 14–15 · Projections to 2050 and the levers that could change the trajectory</div>
+  </div>
+</div>
+
 <hr class="chapter-divider">
 
 <!-- ══════════════════════════════════════════════
@@ -809,10 +1209,10 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
 <section class="chapter-section" id="ch7">
   <div class="chapter-header">
     <div>
-      <div class="chapter-label">Chapter VI — Paths Forward</div>
+      <div class="chapter-label">V. The Future of Food — Paths Forward</div>
       <h2 class="chapter-h2">Pull the levers.<br><em>See what changes.</em></h2>
     </div>
-    <p class="chapter-lede">Adjust each intervention to set ambition. The model shows relative magnitude — not a forecast. No single lever is enough. The synergies between levers are where the real gains hide.</p>
+    <p class="chapter-lede">At current rates of agricultural labour productivity and income growth, a substantial share of the global population could still face food insecurity by 2050 — with Sub-Saharan Africa and Asia-Pacific accounting for ~75% of remaining calorie gaps. Adjust the levers to model what different levels of intervention could achieve.</p>
   </div>
   <div class="chapter-body ch7-wrap">
     <div class="ch7-presets-bar">
@@ -851,54 +1251,6 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
       </div>
     </div>
     <p class="section-footnote" style="margin-top:1.5rem;">Model: IFPRI IMPACT · FAO 2050 outlook · WRI Creating a Sustainable Food Future (2019) · McKinsey Global Institute. Lever interactions simplified. Illustrative model, not a policy forecast.</p>
-  </div>
-</section>
-
-<hr class="chapter-divider">
-
-<!-- ══════════════════════════════════════════════
-     CHAPTER 6 — EXPLAINING FOOD INSECURITY
-══════════════════════════════════════════════ -->
-<section class="chapter-section" id="ch6">
-  <div class="chapter-header">
-    <div>
-      <div class="chapter-label">Chapter VII — Structural Explanations</div>
-      <h2 class="chapter-h2">Agricultural employment<br><em>explains most</em> food insecurity.<br>But not all of it.</h2>
-    </div>
-    <p class="chapter-lede">Grouped by income level, a hidden pattern emerges: in low-income countries food insecurity closely tracks agricultural employment. As incomes rise, the two diverge sharply — pointing to inequality, conflict, and economic shocks as the real drivers.</p>
-  </div>
-
-  <div class="chapter-body">
-    <!-- Legend from Opt A — full three-item version -->
-    <div class="agri-legend">
-      <div class="agri-leg-item">
-        <div class="agri-leg-swatch" style="background:#002960;"></div>
-        <div class="agri-leg-label"><strong>Agricultural employment share</strong> — baseline "explained" food insecurity</div>
-      </div>
-      <div class="agri-leg-item">
-        <div class="agri-leg-swatch stripe"></div>
-        <div class="agri-leg-label"><strong>Excess food insecurity</strong> — beyond what agri employment predicts</div>
-      </div>
-      <div class="agri-leg-item">
-        <div class="agri-leg-swatch" style="background:#7EC8E3; opacity:0.85;"></div>
-        <div class="agri-leg-label"><strong>Agricultural employment %</strong> — overlaid thinner bar</div>
-      </div>
-      <div class="agri-leg-item" style="margin-left:auto;">
-        <span class="agri-leg-label" style="font-style:italic;">Hover any bar for detail</span>
-      </div>
-    </div>
-
-    <!-- Sort controls — apply to all four income panels simultaneously -->
-    <div class="sort-controls">
-      <span class="sort-lbl">Sort within each group by</span>
-      <button class="sort-btn active" id="fi-sort-excess" onclick="sortFIAll('excess',this)">Excess gap ↓</button>
-      <button class="sort-btn" id="fi-sort-total"  onclick="sortFIAll('total',this)">Total food insecurity ↓</button>
-      <button class="sort-btn" id="fi-sort-agri"   onclick="sortFIAll('agri',this)">Agri employment ↓</button>
-    </div>
-
-    <div class="sm-grid" id="sm-grid"></div>
-
-    <p class="section-footnote" style="margin-top:1rem;">Sources: FAO FIES 2022 · ILO Employment by sector 2022 · World Bank income classification 2023 · Data illustrative, based on published ranges. "Excess" = food insecurity % minus agricultural employment %, floored at 0.</p>
   </div>
 </section>
 
@@ -974,17 +1326,16 @@ function hideTip(){ tipEl.style.opacity = 0; }
 window.addEventListener("scroll", ()=>{
   const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
   document.getElementById("nav-progress").style.width = pct + "%";
-  const sections = ["hero","ch1","ch2","ch3","ch4","ch5","ch7","ch6"];
+  const sections = ["hero","section-I","section-II","section-III","section-IV","section-V"];
   const links = document.querySelectorAll(".nav-link");
+  let activeIdx = -1;
   sections.forEach((id, i) => {
     const el = document.getElementById(id);
     if(!el) return;
-    const rect = el.getBoundingClientRect();
-    if(rect.top <= 80 && rect.bottom > 80){
-      links.forEach(l => l.classList.remove("active"));
-      if(links[i-1]) links[i-1].classList.add("active");
-    }
+    if(el.getBoundingClientRect().top <= 120) activeIdx = i;
   });
+  links.forEach(l => l.classList.remove("active"));
+  if(activeIdx > 0 && links[activeIdx-1]) links[activeIdx-1].classList.add("active");
 }, {passive:true});
 
 // ══════════════════════════════════════════════════
@@ -1291,15 +1642,15 @@ window.addEventListener("scroll", ()=>{
 // ══════════════════════════════════════════════════
 (function(){
   const commodities={
-    wheat:{color:"#002960",flows:[["RUS","EGY",10.5],["RUS","TUR",8.2],["RUS","BGD",4.1],["RUS","NGA",3.2],["USA","MEX",4.8],["USA","PHL",3.2],["USA","JPN",2.8],["CAN","IDN",2.4],["CAN","BGD",1.8],["AUS","IDN",3.6],["AUS","VNM",2.1],["FRA","EGY",2.8],["FRA","DZA",4.2],["FRA","MAR",2.6],["UKR","EGY",5.2],["UKR","IDN",2.4],["UKR","BGD",2.0]],
+    wheat:{color:"#D4820A",flows:[["RUS","EGY",10.5],["RUS","TUR",8.2],["RUS","BGD",4.1],["RUS","NGA",3.2],["USA","MEX",4.8],["USA","PHL",3.2],["USA","JPN",2.8],["CAN","IDN",2.4],["CAN","BGD",1.8],["AUS","IDN",3.6],["AUS","VNM",2.1],["FRA","EGY",2.8],["FRA","DZA",4.2],["FRA","MAR",2.6],["UKR","EGY",5.2],["UKR","IDN",2.4],["UKR","BGD",2.0]],
       countryData:{"RUS":{name:"Russia",exports:42.8,imports:0.4,role:"Major exporter",partners:[["Egypt",10.5],["Turkey",8.2],["Bangladesh",4.1],["Nigeria",3.2]]},"USA":{name:"United States",exports:21.4,imports:3.2,role:"Major exporter",partners:[["Mexico",4.8],["Philippines",3.2],["Japan",2.8],["Nigeria",2.1]]},"AUS":{name:"Australia",exports:21.8,imports:0.3,role:"Major exporter",partners:[["Indonesia",3.6],["Vietnam",2.1],["Philippines",1.8],["Malaysia",1.2]]},"FRA":{name:"France",exports:19.4,imports:2.1,role:"Major exporter",partners:[["Algeria",4.2],["Egypt",2.8],["Morocco",2.6],["Nigeria",1.4]]},"UKR":{name:"Ukraine",exports:16.5,imports:0.2,role:"Major exporter",partners:[["Egypt",5.2],["Indonesia",2.4],["Bangladesh",2.0],["Tunisia",1.4]]},"EGY":{name:"Egypt",exports:0.6,imports:22.4,role:"Major importer",partners:[["Russia",10.5],["Ukraine",5.2],["France",2.8],["USA",1.8]]},"IDN":{name:"Indonesia",exports:0.2,imports:11.4,role:"Major importer",partners:[["Australia",3.6],["Canada",2.4],["Ukraine",2.4],["Argentina",1.6]]}}},
-    soy:{color:"#0D5EA6",flows:[["BRA","CHN",48.5],["BRA","DEU",8.4],["BRA","MEX",2.8],["USA","CHN",26.4],["USA","MEX",5.2],["USA","IDN",3.4],["ARG","CHN",6.2],["ARG","DEU",4.8],["ARG","IDN",2.4]],
+    soy:{color:"#B85C00",flows:[["BRA","CHN",48.5],["BRA","DEU",8.4],["BRA","MEX",2.8],["USA","CHN",26.4],["USA","MEX",5.2],["USA","IDN",3.4],["ARG","CHN",6.2],["ARG","DEU",4.8],["ARG","IDN",2.4]],
       countryData:{"BRA":{name:"Brazil",exports:88.4,imports:0.8,role:"Dominant exporter",partners:[["China",48.5],["Germany",8.4],["Mexico",2.8],["Indonesia",2.2]]},"USA":{name:"United States",exports:54.9,imports:1.2,role:"Major exporter",partners:[["China",26.4],["Mexico",5.2],["Germany",2.8],["Indonesia",3.4]]},"ARG":{name:"Argentina",exports:32.6,imports:0.4,role:"Major exporter",partners:[["China",6.2],["Germany",4.8],["Indonesia",2.4],["Vietnam",1.8]]},"CHN":{name:"China",exports:1.2,imports:98.4,role:"Dominant importer",partners:[["Brazil",48.5],["USA",26.4],["Argentina",6.2],["Paraguay",2.4]]}}},
-    rice:{color:"#307FBF",flows:[["IND","BGD",4.8],["IND","SEN",2.2],["IND","IDN",1.8],["IND","KEN",1.2],["THA","CHN",4.2],["THA","IRQ",2.6],["THA","NGA",3.2],["VNM","CHN",3.8],["VNM","PHL",2.2],["PAK","CHN",2.8],["PAK","KEN",1.2]],
+    rice:{color:"#E8A020",flows:[["IND","BGD",4.8],["IND","SEN",2.2],["IND","IDN",1.8],["IND","KEN",1.2],["THA","CHN",4.2],["THA","IRQ",2.6],["THA","NGA",3.2],["VNM","CHN",3.8],["VNM","PHL",2.2],["PAK","CHN",2.8],["PAK","KEN",1.2]],
       countryData:{"IND":{name:"India",exports:22.4,imports:0.4,role:"Dominant exporter",partners:[["Bangladesh",4.8],["Senegal",2.2],["Indonesia",1.8],["Kenya",1.2]]},"THA":{name:"Thailand",exports:8.1,imports:0.6,role:"Major exporter",partners:[["China",4.2],["Nigeria",3.2],["Iraq",2.6],["USA",1.8]]},"VNM":{name:"Vietnam",exports:7.2,imports:0.3,role:"Major exporter",partners:[["China",3.8],["Philippines",2.2],["Ghana",1.6],["Indonesia",1.4]]}}},
-    palmoil:{color:"#1A4A80",flows:[["IDN","CHN",7.2],["IDN","IND",6.8],["IDN","NLD",4.2],["IDN","PAK",2.8],["MYS","CHN",4.8],["MYS","IND",4.2],["MYS","NLD",2.4],["MYS","PAK",1.8]],
+    palmoil:{color:"#C06010",flows:[["IDN","CHN",7.2],["IDN","IND",6.8],["IDN","NLD",4.2],["IDN","PAK",2.8],["MYS","CHN",4.8],["MYS","IND",4.2],["MYS","NLD",2.4],["MYS","PAK",1.8]],
       countryData:{"IDN":{name:"Indonesia",exports:28.2,imports:0.4,role:"Dominant exporter",partners:[["China",7.2],["India",6.8],["Netherlands",4.2],["Pakistan",2.8]]},"MYS":{name:"Malaysia",exports:18.4,imports:0.8,role:"Major exporter",partners:[["China",4.8],["India",4.2],["Netherlands",2.4],["Pakistan",1.8]]},"CHN":{name:"China",exports:0.6,imports:14.4,role:"Major importer",partners:[["Indonesia",7.2],["Malaysia",4.8],["Thailand",1.2],["Colombia",0.4]]}}},
-    maize:{color:"#5A9BC0",flows:[["USA","MEX",16.4],["USA","JPN",10.8],["USA","KOR",5.6],["USA","EGY",4.2],["BRA","EGY",5.6],["BRA","VNM",4.2],["BRA","IRN",4.8],["ARG","VNM",5.2],["ARG","EGY",4.4],["UKR","CHN",7.8],["UKR","DEU",4.4],["UKR","EGY",3.2]],
+    maize:{color:"#F0BC50",flows:[["USA","MEX",16.4],["USA","JPN",10.8],["USA","KOR",5.6],["USA","EGY",4.2],["BRA","EGY",5.6],["BRA","VNM",4.2],["BRA","IRN",4.8],["ARG","VNM",5.2],["ARG","EGY",4.4],["UKR","CHN",7.8],["UKR","DEU",4.4],["UKR","EGY",3.2]],
       countryData:{"USA":{name:"United States",exports:54.2,imports:1.4,role:"Major exporter",partners:[["Mexico",16.4],["Japan",10.8],["Korea",5.6],["Egypt",4.2]]},"BRA":{name:"Brazil",exports:43.6,imports:0.8,role:"Major exporter",partners:[["Egypt",5.6],["Iran",4.8],["Vietnam",4.2],["Japan",3.2]]},"UKR":{name:"Ukraine",exports:24.4,imports:0.2,role:"Major exporter",partners:[["China",7.8],["Germany",4.4],["Egypt",3.2],["Turkey",2.8]]}}}
   };
   const centroids={"RUS":[60,61],"USA":[-100,40],"CAN":[-96,58],"AUS":[134,-27],"FRA":[2,46],"UKR":[31,49],"EGY":[30,27],"IDN":[118,-5],"BGD":[90,23],"TUR":[35,39],"NGA":[8,9],"BRA":[-52,-10],"ARG":[-65,-35],"CHN":[104,35],"IND":[80,22],"VNM":[106,16],"THA":[101,15],"PAK":[69,30],"MEX":[-102,23],"JPN":[138,36],"KOR":[128,37],"PHL":[122,12],"MYS":[110,3],"IRN":[53,32],"DEU":[10,51],"NLD":[5,52],"IRQ":[44,33],"SEN":[-14,14],"GHA":[-1,8],"DZA":[3,28],"MAR":[-5,32],"TUN":[9,34],"KEN":[38,-1],"COL":[-74,4]};
@@ -1334,7 +1685,7 @@ window.addEventListener("scroll", ()=>{
   function seededRng(seed){ return ()=>{ seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return(seed>>>0)/0xFFFFFFFF; }; }
   function drawStars(){
     starsLayer.selectAll("*").remove();
-    starsLayer.append("rect").attr("width",W).attr("height",H).attr("fill","#060A14");
+    starsLayer.append("rect").attr("width",W).attr("height",H).attr("fill","#EEF2F7");
     // milky way
     const defs=svg.select("defs").empty()?svg.append("defs"):svg.select("defs");
     if(defs.select("#ch3-mw").empty()){
@@ -1343,20 +1694,13 @@ window.addEventListener("scroll", ()=>{
       mw.append("stop").attr("offset","45%").attr("stop-color","#0A1E40").attr("stop-opacity","0.5");
       mw.append("stop").attr("offset","100%").attr("stop-color","#06122A").attr("stop-opacity","0");
     }
-    starsLayer.append("rect").attr("width",W).attr("height",H).attr("fill","url(#ch3-mw)");
-    const rng=seededRng(42);
-    for(let i=0;i<1600;i++){
-      const x=rng()*W, y=rng()*H;
-      const r=rng()<0.04?rng()*1.4+0.7:rng()<0.2?rng()*0.7+0.25:rng()*0.35+0.08;
-      starsLayer.append("circle").attr("cx",x).attr("cy",y).attr("r",r)
-        .attr("fill",rng()<0.12?"#FFE8C0":rng()<0.08?"#C0D8FF":"#ffffff")
-        .attr("opacity",rng()*0.45+0.18);
-    }
+    // milky-way overlay removed for light theme
+    // star dots removed for light theme
   }
   function drawGrat(){
     gratLayer.selectAll("*").remove();
     const grat=d3.geoGraticule().step([30,30]);
-    gratLayer.append("path").datum(grat()).attr("d",path).attr("fill","none").attr("stroke","#0A0E1A").attr("stroke-width","0.5");
+    gratLayer.append("path").datum(grat()).attr("d",path).attr("fill","none").attr("stroke","#C8D5E0").attr("stroke-width","0.6");
   }
 
   function render(){
@@ -1368,34 +1712,27 @@ window.addEventListener("scroll", ()=>{
     const borders=topojson.mesh(worldData,worldData.objects.countries,(a,b)=>a!==b);
 
     landLayer.selectAll("*").remove();
-    // Add a subtle land-texture defs gradient for inactive countries
-    const ldDefs=svg.select("defs").empty()?svg.append("defs"):svg.select("defs");
-    if(ldDefs.select("#ch3-land-inactive").empty()){
-      const lg=ldDefs.append("linearGradient").attr("id","ch3-land-inactive").attr("x1","0%").attr("y1","0%").attr("x2","0%").attr("y2","100%");
-      lg.append("stop").attr("offset","0%").attr("stop-color","#1E2D45");
-      lg.append("stop").attr("offset","100%").attr("stop-color","#162236");
-    }
     landLayer.selectAll(".country").data(countries_feat.features).enter().append("path")
       .attr("class","country").attr("d",path)
       .attr("fill",d=>{
         const iso=idMap[String(d.id).padStart(3,"0")];
-        if(iso===selectedCountry) return hexA(color,0.55);  // selected: strong commodity tint
-        if(activeCodes.has(iso)) return "#2A3F5E";          // trade participant: clearly visible mid-blue
-        return "#1A2840";                                    // inactive: still visible, distinctly different from sky
+        if(iso===selectedCountry) return hexA(color,0.40);
+        if(activeCodes.has(iso)) return "#B8CCDE";
+        return "#D8E4EE";
       })
-      .attr("stroke","#4A6080").attr("stroke-width","0.6")  // brighter, thicker borders
+      .attr("stroke","#0D1220").attr("stroke-width","0.35")
       .style("cursor",d=>{const iso=idMap[String(d.id).padStart(3,"0")];return activeCodes.has(iso)?"pointer":"default";})
       .on("mouseover",function(ev,d){
         const iso=idMap[String(d.id).padStart(3,"0")];
         if(!activeCodes.has(iso))return;
-        if(iso!==selectedCountry) d3.select(this).attr("fill",hexA(color,0.40));
+        if(iso!==selectedCountry) d3.select(this).attr("fill",hexA(color,0.32));
         const nm=nameMap[iso];
         if(nm){ const cd=commodities[currentComm].countryData[iso]; showTip(ev,nm,cd?`${cd.role} · click to explore`:"Click to explore trade flows",color); }
       })
       .on("mousemove",moveTip)
       .on("mouseout",function(ev,d){
         const iso=idMap[String(d.id).padStart(3,"0")];
-        if(iso!==selectedCountry) d3.select(this).attr("fill",activeCodes.has(iso)?"#2A3F5E":"#1A2840");
+        if(iso!==selectedCountry) d3.select(this).attr("fill",activeCodes.has(iso)?"#B8CCDE":"#D8E4EE");
         hideTip();
       })
       .on("click",function(ev,d){
@@ -1405,37 +1742,22 @@ window.addEventListener("scroll", ()=>{
         else{selectedCountry=iso;showPanel(iso,color);}
         render();
       });
-    landLayer.append("path").datum(borders).attr("d",path).attr("fill","none").attr("stroke","#4A6080").attr("stroke-width","0.5").attr("opacity","0.7");
+    landLayer.append("path").datum(borders).attr("d",path).attr("fill","none").attr("stroke","#A8BED0").attr("stroke-width","0.4");
 
     // arcs
     arcLayer.selectAll("*").remove();
-    const arcColor="#FFD700"; // yellow for all trade flow lines
     const maxVol=d3.max(flows,d=>d[2]);
-    // wider range so thin vs thick flows are clearly distinguishable
-    const wSc=d3.scaleSqrt().domain([0,maxVol]).range([0.8,11]);
-
-    // glow filter for arc legibility on dark background
-    const arcDefs=svg.select("defs").empty()?svg.append("defs"):svg.select("defs");
-    if(arcDefs.select("#ch3-arc-glow").empty()){
-      const gf=arcDefs.append("filter").attr("id","ch3-arc-glow").attr("x","-20%").attr("y","-20%").attr("width","140%").attr("height","140%");
-      gf.append("feGaussianBlur").attr("in","SourceGraphic").attr("stdDeviation","2.5").attr("result","blur");
-      const gm=gf.append("feMerge");
-      gm.append("feMergeNode").attr("in","blur");
-      gm.append("feMergeNode").attr("in","SourceGraphic");
-    }
-
+    const wSc=d3.scaleSqrt().domain([0,maxVol]).range([0.5,7]);
     flows.forEach(([eISO,iISO,vol])=>{
       const ec=centroids[eISO],ic=centroids[iISO];
       if(!ec||!ic)return;
       const isHl=selectedCountry&&(eISO===selectedCountry||iISO===selectedCountry);
       const isDim=selectedCountry&&!isHl;
       const w=wSc(vol);
-      // soft glow halo behind highlighted arcs
-      if(isHl){arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none").attr("stroke",arcColor).attr("stroke-width",w*4).attr("stroke-linecap","round").attr("opacity",0.12).attr("filter","url(#ch3-arc-glow)");}
+      if(isHl){arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none").attr("stroke",color).attr("stroke-width",w*4.5).attr("stroke-linecap","round").attr("opacity",0.22);}
       arcLayer.append("path").datum({type:"LineString",coordinates:[ec,ic]}).attr("d",path).attr("fill","none")
-        .attr("stroke",arcColor).attr("stroke-width",isHl?w*1.8:w).attr("stroke-linecap","round")
-        .attr("opacity",isDim?0.05:isHl?0.95:0.42).attr("class",isHl?"arc-hl":"")
-        .attr("filter",isHl?"url(#ch3-arc-glow)":null);
+        .attr("stroke",color).attr("stroke-width",isHl?w*2.0:w*1.1).attr("stroke-linecap","round")
+        .attr("opacity",isDim?0.07:isHl?0.96:0.52).attr("class",isHl?"arc-hl":"");
     });
 
     // dots
@@ -1445,14 +1767,14 @@ window.addEventListener("scroll", ()=>{
       const px=proj(coord);if(!px)return;
       const isSel=iso===selectedCountry;
       const isMaj=(commodities[currentComm].countryData[iso]||{}).exports>15;
-      if(isSel){dotLayer.append("circle").attr("cx",px[0]).attr("cy",px[1]).attr("r",10).attr("fill","none").attr("stroke",color).attr("stroke-width","0.8").attr("opacity",0.3);}
+      if(isSel){dotLayer.append("circle").attr("cx",px[0]).attr("cy",px[1]).attr("r",10).attr("fill","none").attr("stroke",color).attr("stroke-width","1.5").attr("opacity",0.7);}
       dotLayer.append("circle").attr("cx",px[0]).attr("cy",px[1]).attr("r",isSel?5.5:isMaj?3.5:2.2)
-        .attr("fill",isSel?color:hexA(color,0.8)).attr("stroke",isSel?"white":"none").attr("stroke-width","1.5").attr("opacity",0.9);
+        .attr("fill",isSel?color:hexA(color,0.9)).attr("stroke",isSel?"#2A3A4A":"none").attr("stroke-width","1.5").attr("opacity",0.95);
       const nm=nameMap[iso];
       if(nm&&(isSel||isMaj)){
         const lx=px[0]+(px[0]>W/2?-7:7), anchor=px[0]>W/2?"end":"start";
         lblLayer.append("text").attr("x",lx).attr("y",px[1]-(isSel?9:6)).attr("text-anchor",anchor)
-          .attr("fill",isSel?color:hexA(color,0.7)).attr("font-family","'Source Sans 3',sans-serif")
+          .attr("fill",isSel?color:"#2A3A4A").attr("font-family","'Source Sans 3',sans-serif")
           .attr("font-size",isSel?"11px":"8.5px").text(nm);
       }
     });
@@ -2287,6 +2609,1149 @@ window.addEventListener("resize", function() {
 });
 
 })();
+</script>
+
+
+
+<script>
+// ══════════════════════════════════════════════════
+// CH1B — GLOBAL SUPPLY VS REQUIREMENT (3-panel)
+// ══════════════════════════════════════════════════
+(function(){
+
+const years = d3.range(1961, 2022);
+
+const pop = {1961:3.07,1962:3.12,1963:3.17,1964:3.23,1965:3.29,1966:3.35,1967:3.41,1968:3.47,1969:3.54,1970:3.60,1971:3.67,1972:3.74,1973:3.81,1974:3.88,1975:3.95,1976:4.02,1977:4.10,1978:4.18,1979:4.25,1980:4.33,1981:4.41,1982:4.49,1983:4.58,1984:4.66,1985:4.75,1986:4.84,1987:4.93,1988:5.02,1989:5.11,1990:5.20,1991:5.30,1992:5.39,1993:5.48,1994:5.57,1995:5.67,1996:5.76,1997:5.85,1998:5.94,1999:6.03,2000:6.12,2001:6.21,2002:6.30,2003:6.39,2004:6.48,2005:6.57,2006:6.66,2007:6.76,2008:6.85,2009:6.94,2010:7.04,2011:7.13,2012:7.22,2013:7.32,2014:7.41,2015:7.50,2016:7.59,2017:7.68,2018:7.77,2019:7.86,2020:7.95,2021:8.04};
+
+const kcalPC = {1961:2198,1962:2222,1963:2245,1964:2268,1965:2280,1966:2285,1967:2300,1968:2320,1969:2335,1970:2360,1971:2380,1972:2370,1973:2365,1974:2360,1975:2385,1976:2410,1977:2430,1978:2460,1979:2480,1980:2500,1981:2510,1982:2530,1983:2540,1984:2560,1985:2585,1986:2600,1987:2620,1988:2640,1989:2650,1990:2660,1991:2660,1992:2670,1993:2680,1994:2700,1995:2710,1996:2730,1997:2740,1998:2750,1999:2770,2000:2790,2001:2800,2002:2810,2003:2830,2004:2850,2005:2860,2006:2870,2007:2890,2008:2900,2009:2910,2010:2920,2011:2940,2012:2950,2013:2960,2014:2970,2015:2980,2016:2990,2017:3000,2018:3010,2019:3020,2020:3000,2021:2980};
+const protPC = {1961:62,1962:63,1963:63,1964:64,1965:64,1966:64,1967:65,1968:65,1969:66,1970:67,1971:67,1972:67,1973:67,1974:67,1975:68,1976:69,1977:70,1978:71,1979:72,1980:72,1981:73,1982:73,1983:73,1984:74,1985:75,1986:75,1987:76,1988:77,1989:77,1990:78,1991:77,1992:77,1993:77,1994:78,1995:78,1996:79,1997:80,1998:80,1999:80,2000:81,2001:81,2002:82,2003:83,2004:84,2005:84,2006:85,2007:86,2008:86,2009:87,2010:88,2011:89,2012:90,2013:90,2014:91,2015:91,2016:92,2017:93,2018:93,2019:94,2020:93,2021:91};
+const fatPC  = {1961:50,1962:51,1963:52,1964:53,1965:53,1966:53,1967:54,1968:55,1969:56,1970:57,1971:57,1972:57,1973:57,1974:56,1975:57,1976:58,1977:60,1978:62,1979:63,1980:65,1981:65,1982:66,1983:67,1984:68,1985:69,1986:70,1987:71,1988:73,1989:74,1990:75,1991:74,1992:74,1993:74,1994:76,1995:77,1996:79,1997:80,1998:81,1999:83,2000:84,2001:85,2002:86,2003:87,2004:89,2005:90,2006:91,2007:92,2008:93,2009:94,2010:96,2011:97,2012:98,2013:99,2014:100,2015:101,2016:102,2017:103,2018:104,2019:106,2020:105,2021:88};
+
+const kcalReqPC = 2350, protReqPC = 52, fatReqPC = 63;
+
+function gKcal(y)  { return kcalPC[y] * pop[y] / 1e6; }
+function gProt(y)  { return protPC[y] * pop[y]; }
+function gFat(y)   { return fatPC[y]  * pop[y]; }
+function rKcal(y)  { return kcalReqPC * pop[y] / 1e6; }
+function rProt(y)  { return protReqPC * pop[y]; }
+function rFat(y)   { return fatReqPC  * pop[y]; }
+
+const panels = [
+  {
+    id:"ch1b-svg-0",
+    titleLines:["Global calorie supply and","requirement"],
+    unit:"Trillion kcal per day",
+    noteLines:["Requirement based on","World Bank healthy diet"],
+    supplyFn:gKcal, reqFn:rKcal,
+    yMax:26, yTicks:[0,5,10,15,20,25],
+    endSupply:23.9, endReq:18.7, cagr:"+2.1% p.a."
+  },
+  {
+    id:"ch1b-svg-1",
+    titleLines:["Global protein supply and","requirement"],
+    unit:"Billion grams per day",
+    noteLines:["Requirement based on","recommended dietary allowance","for average adult aged 19\u201330\u00b9"],
+    supplyFn:gProt, reqFn:rProt,
+    yMax:800, yTicks:[0,100,200,300,400,500,600,700,800],
+    endSupply:734, endReq:409, cagr:"+2.3% p.a."
+  },
+  {
+    id:"ch1b-svg-2",
+    titleLines:["Global fat supply and","requirement"],
+    unit:"Billion grams per day",
+    noteLines:["Requirement based on average","of estimated acceptable range","for ~2300 calorie diet\u00b2"],
+    supplyFn:gFat, reqFn:rFat,
+    yMax:800, yTicks:[0,100,200,300,400,500,600,700],
+    endSupply:700, endReq:561, cagr:"+2.6% p.a."
+  }
+];
+
+const container = document.getElementById("ch1b-panels");
+if (!container) return;
+
+panels.forEach(function(p) {
+  const div = document.createElement("div");
+  div.className = "ch1b-panel";
+  div.innerHTML =
+    '<div class="ch1b-panel-title">' + p.titleLines.join("<br>") + '</div>' +
+    '<div class="ch1b-panel-unit">' + p.unit + '</div>' +
+    '<svg class="ch1b-svg" id="' + p.id + '"></svg>' +
+    '<div class="ch1b-panel-note">' + p.noteLines.join("<br>") + '</div>';
+  container.appendChild(div);
+});
+
+requestAnimationFrame(function(){
+  requestAnimationFrame(function(){
+    panels.forEach(function(p){ drawPanel(p); });
+  });
+});
+
+function drawPanel(p) {
+  const el = document.getElementById(p.id);
+  if (!el) return;
+  const pW = Math.max(el.parentElement.clientWidth, 200);
+  const M  = {top:24, right:48, bottom:34, left:40};
+  const W  = pW - M.left - M.right;
+  const H  = 220;
+  const TH = H + M.top + M.bottom;
+
+  el.setAttribute("viewBox","0 0 " + pW + " " + TH);
+  el.setAttribute("height", TH);
+
+  const svg = d3.select("#" + p.id);
+  svg.selectAll("*").remove();
+
+  const xSc = d3.scaleLinear().domain([1961,2021]).range([0,W]);
+  const ySc = d3.scaleLinear().domain([0,p.yMax]).range([H,0]);
+  const g   = svg.append("g").attr("transform","translate("+M.left+","+M.top+")");
+
+  // Gridlines + y-axis labels
+  p.yTicks.forEach(function(t){
+    g.append("line")
+      .attr("x1",0).attr("x2",W).attr("y1",ySc(t)).attr("y2",ySc(t))
+      .attr("stroke", t===0 ? "#aaa" : "#E2E8ED")
+      .attr("stroke-width", t===0 ? 1 : 0.7);
+    if (t > 0) {
+      g.append("text")
+        .attr("x",-6).attr("y",ySc(t))
+        .attr("text-anchor","end").attr("dominant-baseline","middle")
+        .attr("fill","#888").attr("font-size","9px")
+        .attr("font-family","'Source Sans 3',sans-serif")
+        .text(t);
+    }
+  });
+
+  // X-axis labels
+  [[1961,"1960"],[1980,"80"],[2000,"2000"],[2020,"2020"]].forEach(function(pair){
+    var yr = pair[0], lbl = pair[1];
+    g.append("text")
+      .attr("x", xSc(yr)).attr("y", H+16)
+      .attr("text-anchor", yr===1961?"start":"middle")
+      .attr("fill","#888").attr("font-size","9px")
+      .attr("font-family","'Source Sans 3',sans-serif")
+      .text(lbl);
+  });
+
+  // Line generators
+  const lineS = d3.line().x(function(yr){return xSc(yr);}).y(function(yr){return ySc(p.supplyFn(yr));}).curve(d3.curveCatmullRom.alpha(0.5));
+  const lineR = d3.line().x(function(yr){return xSc(yr);}).y(function(yr){return ySc(p.reqFn(yr));}).curve(d3.curveCatmullRom.alpha(0.5));
+
+  // Requirement line (light blue)
+  g.append("path").datum(years).attr("d",lineR).attr("fill","none")
+    .attr("stroke","#5BB8E0").attr("stroke-width",2).attr("stroke-linejoin","round");
+
+  // Supply line (dark navy)
+  g.append("path").datum(years).attr("d",lineS).attr("fill","none")
+    .attr("stroke","#002960").attr("stroke-width",2.2).attr("stroke-linejoin","round");
+
+  // End-point labels
+  var x21 = xSc(2021);
+  var sY  = ySc(p.supplyFn(2021));
+  var rY  = ySc(p.reqFn(2021));
+
+  g.append("text").attr("x",x21+4).attr("y",sY)
+    .attr("dominant-baseline","middle")
+    .attr("fill","#002960").attr("font-size","10px").attr("font-weight","700")
+    .attr("font-family","'Source Sans 3',sans-serif")
+    .text(p.endSupply);
+
+  g.append("text").attr("x",x21+4).attr("y",rY)
+    .attr("dominant-baseline","middle")
+    .attr("fill","#3A9EC8").attr("font-size","10px").attr("font-weight","700")
+    .attr("font-family","'Source Sans 3',sans-serif")
+    .text(p.endReq);
+
+  // Growth arrow
+  var arrowId = "arr-" + p.id.replace(/[^a-z0-9]/gi,"_");
+  var defs = svg.append("defs");
+  defs.append("marker").attr("id",arrowId)
+    .attr("viewBox","0 -4 8 8").attr("refX",7).attr("refY",0)
+    .attr("markerWidth",5).attr("markerHeight",5).attr("orient","auto")
+    .append("path").attr("d","M0,-4L8,0L0,4").attr("fill","#222");
+
+  var ax1=xSc(1966), ay1=ySc(p.yMax*0.50);
+  var ax2=xSc(1996), ay2=ySc(p.yMax*0.86);
+
+  g.append("line")
+    .attr("x1",ax1).attr("y1",ay1).attr("x2",ax2).attr("y2",ay2)
+    .attr("stroke","#222").attr("stroke-width",1.4)
+    .attr("marker-end","url(#"+arrowId+")");
+
+  g.append("text")
+    .attr("x", ax1+(ax2-ax1)*0.38)
+    .attr("y", ay1+(ay2-ay1)*0.38 - 10)
+    .attr("text-anchor","middle")
+    .attr("fill","#111").attr("font-size","11px").attr("font-weight","700")
+    .attr("font-family","'Source Sans 3',sans-serif")
+    .text(p.cagr);
+}
+
+window.addEventListener("resize", function(){
+  clearTimeout(window._ch1bRt);
+  window._ch1bRt = setTimeout(function(){ panels.forEach(function(p){ drawPanel(p); }); }, 150);
+});
+
+})();
+</script>
+
+
+<script>
+// ══════════════════════════════════════════════════
+// CH-PLATE — WHAT'S ON YOUR PLATE? (scrollytelling)
+// ══════════════════════════════════════════════════
+// ══════════════════════════════════════════════════
+// CH-PLATE — WHAT'S ON YOUR PLATE? (scrollytelling)
+// 3 scroll steps:
+//   0 → 10 avg circles 2010, sorted by kcal, light→dark
+//   1 → transition to 2023 avg (circles grow)
+//   2 → avg greyed, min+max emerge for 2023
+// ══════════════════════════════════════════════════
+(function(){
+
+// ── Data ─────────────────────────────────────────
+// 2010 averages (provided)
+var DATA_2010_AVG = [
+  {id:"ssa",   label:"Sub-Saharan Africa",         kcal:2439},
+  {id:"india", label:"India",                       kcal:2357},
+  {id:"easia", label:"Emerging Asia",               kcal:2570},
+  {id:"oeca",  label:"Other Europe & C. Asia",      kcal:3037},
+  {id:"lac",   label:"Latin America & Caribbean",   kcal:2731},
+  {id:"aasia", label:"Advanced Asia",               kcal:3154},
+  {id:"china", label:"Greater China",               kcal:3009},
+  {id:"eu30",  label:"EU30",                        kcal:3332},
+  {id:"mena",  label:"Middle East & N. Africa",     kcal:3089},
+  {id:"nam",   label:"North America",               kcal:3634}
+];
+
+// 2023 averages (illustrative, based on FAOSTAT trends ~+2-3% CAGR)
+var DATA_2023_AVG = [
+  {id:"ssa",   label:"Sub-Saharan Africa",          kcal:2530},
+  {id:"india", label:"India",                        kcal:2660},
+  {id:"easia", label:"Emerging Asia",                kcal:2820},
+  {id:"oeca",  label:"Other Europe & C. Asia",       kcal:3280},
+  {id:"lac",   label:"Latin America & Caribbean",    kcal:2940},
+  {id:"aasia", label:"Advanced Asia",                kcal:3200},
+  {id:"china", label:"Greater China",                kcal:3130},
+  {id:"eu30",  label:"EU30",                         kcal:3480},
+  {id:"mena",  label:"Middle East & N. Africa",      kcal:3060},
+  {id:"nam",   label:"North America",                kcal:3770}
+];
+
+// 2023 min/max by region
+var DATA_2023_RANGE = {
+  ssa:   {min:2050, max:3180, minCountry:"Lesotho", maxCountry:"Mauritius"},
+  india:   {min:2540, max:2540, minCountry:"India", maxCountry:"India"},
+  easia:   {min:2280, max:3090, minCountry:"Solomon Islands", maxCountry:"Lao People's Dem. Rep."},
+  oeca:   {min:2380, max:3750, minCountry:"Tajikistan", maxCountry:"Türkiye"},
+  lac:   {min:2200, max:3520, minCountry:"Haiti", maxCountry:"Brazil"},
+  aasia:   {min:2820, max:3690, minCountry:"New Caledonia", maxCountry:"Australia"},
+  china:   {min:3060, max:3420, minCountry:"China, Hong Kong SAR", maxCountry:"China, mainland"},
+  eu30:   {min:2920, max:3960, minCountry:"Cyprus", maxCountry:"Belgium"},
+  mena:   {min:2230, max:3820, minCountry:"Yemen", maxCountry:"Israel"},
+  nam:   {min:3680, max:3860, minCountry:"Canada", maxCountry:"United States"},
+};
+
+// Sort 2010 avg by kcal ascending — this is the fixed left-right order
+var SORTED_2010 = DATA_2010_AVG.slice().sort(function(a,b){return a.kcal - b.kcal;});
+
+// Map id → sorted position
+var POS = {};
+SORTED_2010.forEach(function(d,i){ POS[d.id] = i; });
+
+// Build 2023 avg sorted by 2023 kcal (independent of 2010 order)
+// India (2540) < SSA (2612) so India stays rank 1, SSA rank 2 in 2023
+var SORTED_2023 = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal - b.kcal;});
+
+// ── Colour scale: light warm cream → deep terracotta ─────────
+function kcalColor(kcal, min, max) {
+  var t = (kcal - min) / (max - min);
+  // Interpolate: light wheat (#F5E8C8) → deep terracotta (#7A2E0A)
+  var r = Math.round(245 + t*(122-245));
+  var g = Math.round(232 + t*(46-232));
+  var b = Math.round(200 + t*(10-200));
+  return "rgb("+r+","+g+","+b+")";
+}
+
+function textColor(kcal, min, max) {
+  var t = (kcal - min) / (max - min);
+  return t > 0.45 ? "rgba(255,255,255,0.92)" : "rgba(60,30,10,0.85)";
+}
+
+// ── Layout constants ─────────────────────────────
+var N = 10;
+var currentStep = -1;
+
+var svgEl = document.getElementById("plate-scroll-svg");
+if (!svgEl) return;
+
+var W, H, CY, cellW, maxR, minR;
+
+function computeLayout() {
+  W = svgEl.parentElement.clientWidth || 800;
+  H = Math.max(320, Math.min(420, W * 0.42));
+  CY = H * 0.5;
+  cellW = W / N;
+  maxR = Math.min(cellW * 0.44, H * 0.42);
+  minR = maxR * 0.50;
+}
+
+function cx(i) { return cellW * i + cellW / 2; }
+
+function kcalToR(kcal, allMin, allMax) {
+  // Area proportional: r = sqrt(kcal/max) * maxR
+  return minR + (maxR - minR) * Math.sqrt((kcal - allMin) / (allMax - allMin));
+}
+
+var svg = d3.select("#plate-scroll-svg");
+var circlesG, labelsG, rangeG, annotG;
+
+function initSVG() {
+  computeLayout();
+  svgEl.setAttribute("width",  W);
+  svgEl.setAttribute("height", H);
+  svgEl.setAttribute("viewBox", "0 0 " + W + " " + H);
+  svg.selectAll("*").remove();
+
+  circlesG = svg.append("g").attr("class","circles-g");
+  rangeG   = svg.append("g").attr("class","range-g");
+  labelsG  = svg.append("g").attr("class","labels-g");
+  annotG   = svg.append("g").attr("class","annot-g");
+}
+
+// ══════════════════════════════════════════════════════════════
+// DRAW STRATEGY: SVG is always W × H (viewport-sized, never grows).
+// All content lives in a tall "world" coordinate space.
+// We animate the viewBox to pan/zoom to the relevant slice.
+// ══════════════════════════════════════════════════════════════
+
+// World height — enough for step-1 two rows + step-2 min/avg/max stack
+// Recalculated in each draw call from current maxR.
+function worldH() { return H * 3.2; }
+
+// Smooth viewBox transition helper
+function animateViewBox(x, y, w, h, dur, ease) {
+  svg.transition().duration(dur || 0).ease(ease || d3.easeCubicInOut)
+    .attrTween("viewBox", function() {
+      var cur = (svgEl.getAttribute("viewBox") || ("0 0 "+W+" "+H)).split(" ").map(Number);
+      var target = [x, y, w, h];
+      return function(t) {
+        return cur.map(function(c,i){ return c + (target[i]-c)*t; }).join(" ");
+      };
+    });
+}
+
+// Snap viewBox with no animation
+function snapViewBox(x, y, w, h) {
+  svgEl.setAttribute("viewBox", x+" "+y+" "+w+" "+h);
+}
+
+// ── Step 0: 2010 avg row, centred in viewport ─────────────────
+function drawStep0(animate) {
+  // SVG always W × H
+  svgEl.setAttribute("width",  W);
+  svgEl.setAttribute("height", H);
+  snapViewBox(0, 0, W, H);
+
+  // Clean up step-1 / step-2 / step-3 elements
+  circlesG.selectAll(".plate-circ-2010,.plate-circ-2023").remove();
+  circlesG.selectAll(".kcal-2010,.kcal-2023,.kcal-lbl-2023").remove();
+  circlesG.selectAll(".conn-g,.conn-layer").remove();
+  labelsG.selectAll(".reg-2010,.reg-2023,.reg-lbl-2023,.year-lbl-2010,.year-lbl-2023").remove();
+  rangeG.selectAll("*").remove();
+
+  var allMin = d3.min(SORTED_2010, function(d){return d.kcal;});
+  var allMax = d3.max(SORTED_2010, function(d){return d.kcal;});
+  var dur  = animate ? 700 : 0;
+  var ease = d3.easeCubicInOut;
+
+  rangeG.transition().duration(dur).style("opacity",0)
+    .on("end",function(){rangeG.selectAll("*").remove();});
+  annotG.selectAll("*").remove();
+
+  var circles = circlesG.selectAll(".plate-circ").data(SORTED_2010, function(d){return d.id;});
+
+  var enter = circles.enter().append("circle").attr("class","plate-circ")
+    .attr("cx", function(d,i){return cx(i);})
+    .attr("cy", CY).attr("r", 0).attr("opacity", 0)
+    .style("cursor","pointer")
+    .on("click",   function(event,d){ openVoronoi(d.id, d.label, d.kcal); })
+    .on("mouseover",function(event,d){ showPlateTooltip(event, d.label, d.kcal, "2010"); })
+    .on("mousemove", movePlateTooltip)
+    .on("mouseout",  hidePlateTooltip);
+
+  enter.merge(circles)
+    .transition().duration(dur).ease(ease)
+    .attr("cx", function(d,i){return cx(i);})
+    .attr("cy", CY)
+    .attr("r",   function(d){return kcalToR(d.kcal, allMin, allMax);})
+    .attr("fill",function(d){return kcalColor(d.kcal, allMin, allMax);})
+    .attr("stroke","rgba(255,255,255,0.3)").attr("stroke-width",1.5)
+    .attr("opacity",1);
+
+  circles.exit().transition().duration(dur).attr("r",0).attr("opacity",0).remove();
+
+  // Region labels
+  var lbls   = labelsG.selectAll(".reg-lbl").data(SORTED_2010, function(d){return d.id;});
+  var lEnter = lbls.enter().append("text").attr("class","reg-lbl")
+    .attr("text-anchor","middle")
+    .attr("font-family","'Source Sans 3',sans-serif")
+    .attr("fill","var(--grey-2)").attr("opacity",0);
+
+  lEnter.merge(lbls).transition().duration(dur).ease(ease)
+    .attr("x", function(d,i){return cx(i);})
+    .attr("y", function(d){return CY + kcalToR(d.kcal, allMin, allMax) + 15;})
+    .attr("font-size", Math.max(8, Math.min(10, cellW*0.12))+"px")
+    .attr("opacity",1)
+    .text(function(d){return d.label;});
+  lbls.exit().remove();
+
+  // kcal labels inside circles
+  var klbls  = circlesG.selectAll(".kcal-lbl").data(SORTED_2010, function(d){return d.id;});
+  var kEnter = klbls.enter().append("text").attr("class","kcal-lbl")
+    .attr("text-anchor","middle").attr("dominant-baseline","middle")
+    .attr("font-family","'Source Sans 3',sans-serif")
+    .attr("font-weight","700").attr("pointer-events","none").attr("opacity",0);
+
+  kEnter.merge(klbls).transition().duration(dur).ease(ease)
+    .attr("x", function(d,i){return cx(i);})
+    .attr("y", CY)
+    .attr("font-size", function(d){return Math.max(7, kcalToR(d.kcal,allMin,allMax)*0.28)+"px";})
+    .attr("fill", function(d){return textColor(d.kcal, allMin, allMax);})
+    .attr("opacity",1)
+    .text(function(d){return d3.format(",d")(d.kcal);});
+  klbls.exit().remove();
+
+  // Year badge
+  annotG.selectAll("*").remove();
+  var badge = annotG.append("text")
+    .attr("x", W-12).attr("y", 22).attr("text-anchor","end")
+    .attr("font-family","'Libre Baskerville',serif")
+    .attr("font-size","1.5rem").attr("font-weight","700")
+    .attr("fill","var(--ink)").attr("opacity", animate ? 0 : 1).text("2010");
+  if (animate) badge.transition().duration(400).delay(300).attr("opacity",1);
+  annotG.append("text").attr("x",W-12).attr("y",40).attr("text-anchor","end")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.68rem")
+    .attr("fill","var(--grey-2)").text("kcal / capita / day · regional average");
+}
+
+// ── Step 1: two rows in world-space, viewBox shows 2010 first then pans to show both ──
+function drawStep1(animate) {
+  svgEl.setAttribute("width",  W);
+  svgEl.setAttribute("height", H);
+
+  var WH = worldH();       // total world height
+  var globalMin = Math.min(
+    d3.min(DATA_2010_AVG,function(d){return d.kcal;}),
+    d3.min(DATA_2023_AVG,function(d){return d.kcal;})
+  );
+  var globalMax = Math.max(
+    d3.max(DATA_2010_AVG,function(d){return d.kcal;}),
+    d3.max(DATA_2023_AVG,function(d){return d.kcal;})
+  );
+
+  // Two rows: 2010 near top of world, 2023 near bottom
+  var ROW_TOP = WH * 0.22;
+  var ROW_BOT = WH * 0.78;
+
+  var S23 = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal-b.kcal;});
+  var pos10 = {}, pos23 = {};
+  SORTED_2010.forEach(function(d,i){ pos10[d.id]=i; });
+  S23.forEach(function(d,i){ pos23[d.id]=i; });
+
+  var dur  = animate ? 700 : 0;
+  var ease = d3.easeCubicInOut;
+
+  // Start: viewBox centred on 2010 row (from step 0 position)
+  if (animate) snapViewBox(0, 0, W, H);
+
+  // Clear leftovers
+  rangeG.selectAll("*").remove();
+  annotG.selectAll("*").remove();
+  circlesG.selectAll(".plate-circ-2010,.plate-circ-2023,.kcal-2010,.kcal-2023").remove();
+  circlesG.selectAll(".conn-g").remove();
+  labelsG.selectAll(".reg-2010,.reg-2023,.year-lbl-2010,.year-lbl-2023").remove();
+  circlesG.selectAll(".plate-circ,.kcal-lbl").remove();
+  labelsG.selectAll(".reg-lbl").remove();
+
+  // ── Draw connectors (initially invisible) ─────────────────────
+  var RC = {
+    india:"#B85C00", ssa:"#C4703A",  easia:"#8B6B3D",
+    lac:"#5A8C3C",   oeca:"#3A7CA8", aasia:"#8C2020",
+    china:"#E07840", eu30:"#556B2F", mena:"#D4A020",  nam:"#002960"
+  };
+  var connG = circlesG.append("g").attr("class","conn-g").attr("opacity",0);
+  var midY  = (ROW_TOP + ROW_BOT) / 2;
+
+  SORTED_2010.forEach(function(d) {
+    var x1    = cx(pos10[d.id]);
+    var x2    = cx(pos23[d.id]);
+    var col   = RC[d.id] || "#888";
+    var moved = pos10[d.id] !== pos23[d.id];
+    var pathD = "M"+x1+","+ROW_TOP+" C"+x1+","+midY+" "+x2+","+midY+" "+x2+","+ROW_BOT;
+    var pathEl = connG.append("path")
+      .attr("d", pathD).attr("fill","none")
+      .attr("stroke",col)
+      .attr("stroke-width", moved ? 2.2 : 1.2)
+      .attr("stroke-opacity", moved ? 0.65 : 0.22);
+    var node = pathEl.node();
+    var len  = node ? node.getTotalLength() : 600;
+    pathEl.attr("stroke-dasharray", len).attr("stroke-dashoffset", len);
+  });
+
+  // ── 2010 row ──────────────────────────────────────────────────
+  SORTED_2010.forEach(function(d,i) {
+    var r = kcalToR(d.kcal, globalMin, globalMax);
+    circlesG.append("circle").attr("class","plate-circ-2010")
+      .attr("cx",cx(i)).attr("cy",ROW_TOP).attr("r",r)
+      .attr("fill",kcalColor(d.kcal,globalMin,globalMax))
+      .attr("stroke","rgba(255,255,255,0.3)").attr("stroke-width",1.5)
+      .attr("opacity",0.8).style("cursor","pointer")
+      .on("click",(function(_d){return function(ev){openVoronoi(_d.id,_d.label,_d.kcal);};})(d))
+      .on("mouseover",(function(_d){return function(ev){showPlateTooltip(ev,_d.label,_d.kcal,"2010");};})(d))
+      .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip);
+
+    circlesG.append("text").attr("class","kcal-2010")
+      .attr("x",cx(i)).attr("y",ROW_TOP)
+      .attr("text-anchor","middle").attr("dominant-baseline","middle")
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
+      .attr("pointer-events","none")
+      .attr("font-size",Math.max(7,r*0.26)+"px")
+      .attr("fill",textColor(d.kcal,globalMin,globalMax)).attr("opacity",0.8)
+      .text(d3.format(",d")(d.kcal));
+
+    labelsG.append("text").attr("class","reg-2010")
+      .attr("x",cx(i)).attr("y",ROW_TOP - r - 10)
+      .attr("text-anchor","middle")
+      .attr("font-family","'Source Sans 3',sans-serif")
+      .attr("font-size",Math.max(7,Math.min(9,cellW*0.11))+"px")
+      .attr("fill","var(--grey-2)").attr("opacity",0.75).text(d.label);
+  });
+
+  labelsG.append("text").attr("class","year-lbl-2010")
+    .attr("x",4).attr("y",ROW_TOP).attr("dominant-baseline","middle")
+    .attr("font-family","'Libre Baskerville',serif")
+    .attr("font-size","0.9rem").attr("font-weight","700")
+    .attr("fill","var(--grey-2)").attr("opacity",0.9).text("2010");
+
+  // ── 2023 row ──────────────────────────────────────────────────
+  S23.forEach(function(d,i) {
+    var r = kcalToR(d.kcal, globalMin, globalMax);
+    circlesG.append("circle").attr("class","plate-circ-2023")
+      .attr("cx",cx(i)).attr("cy",ROW_BOT).attr("r",r)
+      .attr("fill",kcalColor(d.kcal,globalMin,globalMax))
+      .attr("stroke","rgba(255,255,255,0.35)").attr("stroke-width",1.5)
+      .attr("opacity",1).style("cursor","pointer")
+      .on("click",(function(_d){return function(ev){openVoronoi(_d.id,_d.label,_d.kcal);};})(d))
+      .on("mouseover",(function(_d){return function(ev){showPlateTooltip(ev,_d.label,_d.kcal,"2023");};})(d))
+      .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip);
+
+    circlesG.append("text").attr("class","kcal-2023")
+      .attr("x",cx(i)).attr("y",ROW_BOT)
+      .attr("text-anchor","middle").attr("dominant-baseline","middle")
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
+      .attr("pointer-events","none")
+      .attr("font-size",Math.max(7,r*0.26)+"px")
+      .attr("fill",textColor(d.kcal,globalMin,globalMax)).attr("opacity",1)
+      .text(d3.format(",d")(d.kcal));
+
+    labelsG.append("text").attr("class","reg-2023")
+      .attr("x",cx(i)).attr("y",ROW_BOT + r + 13)
+      .attr("text-anchor","middle")
+      .attr("font-family","'Source Sans 3',sans-serif")
+      .attr("font-size",Math.max(7,Math.min(9,cellW*0.11))+"px")
+      .attr("fill","var(--grey-1)").attr("opacity",1).text(d.label);
+  });
+
+  labelsG.append("text").attr("class","year-lbl-2023")
+    .attr("x",4).attr("y",ROW_BOT).attr("dominant-baseline","middle")
+    .attr("font-family","'Libre Baskerville',serif")
+    .attr("font-size","0.9rem").attr("font-weight","700")
+    .attr("fill","var(--ink)").attr("opacity",1).text("2023");
+
+  annotG.append("text").attr("x",W-12).attr("y",ROW_BOT-maxR-30)
+    .attr("text-anchor","end")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.68rem")
+    .attr("fill","var(--grey-2)").text("Curves show rank changes 2010 → 2023");
+
+  // ── Animation sequence ────────────────────────────────────────
+  // Phase A (if animate): viewBox starts showing 2010 row, then pans to show both rows
+  // The world is WH tall. We want to show a viewport of H px.
+  // "show 2010 only" → viewBox y = ROW_TOP - H*0.5 (centre on 2010 row)
+  // "show both"      → viewBox y = ROW_TOP - H*0.18 (2010 near top, 2023 visible below)
+  var vb_2010_only = [0, ROW_TOP - H*0.5,  W, H];
+  var vb_both      = [0, ROW_TOP - H*0.18, W, H * (ROW_BOT - ROW_TOP + H*0.4) / H];
+  // Clamp: show the full span between rows + some padding, scaled to fit H
+  var span         = (ROW_BOT + maxR + 20) - (ROW_TOP - maxR - 20);
+  var scale        = Math.max(1, span / (H * 0.85));
+  var vbH_both     = H * scale;
+  var vbY_both     = ROW_TOP - maxR - 20;
+
+  if (animate) {
+    // Start centred on 2010 row
+    snapViewBox(vb_2010_only[0], vb_2010_only[1], W, H);
+
+    // After a beat, pan+zoom out to show both rows
+    setTimeout(function(){
+      animateViewBox(0, vbY_both, W, vbH_both, 900, d3.easeCubicInOut);
+
+      // After pan completes, draw connectors
+      setTimeout(function(){
+        connG.attr("opacity",1)
+          .selectAll("path")
+          .transition().duration(650).ease(d3.easeQuadInOut)
+          .attr("stroke-dashoffset", 0);
+      }, 950);
+    }, 400);
+  } else {
+    // No animation: show both rows immediately
+    snapViewBox(0, vbY_both, W, vbH_both);
+    connG.attr("opacity",1).selectAll("path").attr("stroke-dashoffset",0);
+  }
+}
+
+// ── Step 2: avg moves to top-third of viewport, min/max appear below ──
+function drawStep2(animate) {
+  svgEl.setAttribute("width",  W);
+  svgEl.setAttribute("height", H);
+
+  var fadeDur = animate ? 400 : 0;
+  var ease    = d3.easeCubicInOut;
+
+  // Fade out connectors + 2010 row
+  circlesG.selectAll(".conn-g")
+    .transition().duration(fadeDur).attr("opacity",0)
+    .on("end",function(){d3.select(this).remove();});
+  circlesG.selectAll(".plate-circ-2010,.kcal-2010")
+    .transition().duration(fadeDur).attr("opacity",0)
+    .on("end",function(){d3.select(this).remove();});
+  labelsG.selectAll(".reg-2010,.year-lbl-2010")
+    .transition().duration(fadeDur).attr("opacity",0)
+    .on("end",function(){d3.select(this).remove();});
+
+  // ── Layout arithmetic (all in world space, same WH) ───────────
+  var WH = worldH();
+
+  var allVals = DATA_2023_AVG.map(function(d){return d.kcal;});
+  var rngVals = [];
+  SORTED_2023.forEach(function(d){
+    var r = DATA_2023_RANGE[d.id];
+    if (r) rngVals.push(r.min, r.max);
+  });
+  var globalMin = d3.min(allVals.concat(rngVals));
+  var globalMax = d3.max(allVals.concat(rngVals));
+
+  var GAP  = 16;
+  var bigR = kcalToR(globalMax, globalMin, globalMax);    // biggest max circle
+  var bigA = kcalToR(d3.max(allVals), globalMin, globalMax); // biggest avg
+  var bigN = kcalToR(globalMin, globalMin, globalMax);    // smallest min
+
+  // Place avg row at top-third of world, leaving room above for min circles + labels
+  var topLabel   = 24;   // px for country label above min
+  var botLabel   = 24;   // px for country label below max
+  var regionLbl  = 16;   // px for region label below country label
+
+  var CY_AVG = topLabel + bigN*2 + GAP + bigA + 30;  // avg circle centre in world
+  var totalH = CY_AVG + bigA + GAP + bigR*2 + botLabel + regionLbl + 20;
+  // Scale: fit totalH into H with padding
+  var scl    = Math.min(1.0, (H - 40) / totalH);
+  var vbH    = totalH / scl;   // viewBox height to show everything
+  var vbY    = 0;              // start from top of world
+
+  var S23 = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal-b.kcal;});
+  var pos23 = {}; S23.forEach(function(d,i){ pos23[d.id]=i; });
+
+  // ── Move 2023 avg circles from their current position to CY_AVG ──
+  var existing = circlesG.selectAll(".plate-circ-2023");
+
+  if (existing.size() > 0) {
+    // They exist from step 1 — transition them up to CY_AVG and grey them
+    existing
+      .style("cursor","default").on("click",null).on("mouseover",null).on("mouseout",null)
+      .transition().duration(animate ? 700 : 0).ease(ease)
+      .attr("cy", CY_AVG)
+      .attr("fill","#C8CDD4").attr("stroke","rgba(150,155,160,0.4)")
+      .attr("opacity",0.45).style("pointer-events","none");
+
+    circlesG.selectAll(".kcal-2023")
+      .transition().duration(animate ? 700 : 0).ease(ease)
+      .attr("y", CY_AVG).attr("fill","rgba(140,145,150,0.7)");
+
+    labelsG.selectAll(".reg-2023,.year-lbl-2023")
+      .transition().duration(animate ? 400 : 0).attr("opacity",0)
+      .on("end",function(){d3.select(this).remove();});
+  } else {
+    // Coming from step 0 or rebuild — create greyed avg row
+    S23.forEach(function(d,i){
+      var r = kcalToR(d.kcal, globalMin, globalMax);
+      circlesG.append("circle").attr("class","plate-circ-2023")
+        .attr("cx",cx(i)).attr("cy",CY_AVG).attr("r",r)
+        .attr("fill","#C8CDD4").attr("stroke","rgba(150,155,160,0.4)").attr("stroke-width",1.5)
+        .attr("opacity",0.45).style("pointer-events","none");
+      circlesG.append("text").attr("class","kcal-2023")
+        .attr("x",cx(i)).attr("y",CY_AVG)
+        .attr("text-anchor","middle").attr("dominant-baseline","middle")
+        .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
+        .attr("pointer-events","none")
+        .attr("font-size",Math.max(7,r*0.26)+"px")
+        .attr("fill","rgba(140,145,150,0.7)").attr("opacity",1)
+        .text(d3.format(",d")(d.kcal));
+    });
+  }
+
+  // Snap viewBox so avg row is visible while it transitions
+  if (animate) {
+    snapViewBox(0, vbY, W, vbH);
+  } else {
+    snapViewBox(0, vbY, W, vbH);
+  }
+
+  annotG.selectAll("*").remove();
+  annotG.append("text").attr("x",W-12).attr("y",22).attr("text-anchor","end")
+    .attr("font-family","'Libre Baskerville',serif")
+    .attr("font-size","1.4rem").attr("font-weight","700")
+    .attr("fill","var(--ink)").text("2023");
+  annotG.append("text").attr("x",W-12).attr("y",38).attr("text-anchor","end")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.68rem")
+    .attr("fill","var(--grey-2)").text("kcal / capita / day · range within region");
+
+  // ── Build min/max after avg has settled ───────────────────────
+  var minMaxDelay = animate ? 750 : 0;
+
+  function buildMinMax() {
+    rangeG.selectAll("*").remove();
+
+    // Shared baselines
+    var colData = S23.map(function(d,i){
+      var rng  = DATA_2023_RANGE[d.id] || {min:d.kcal,max:d.kcal,minCountry:"",maxCountry:""};
+      var rAvg = kcalToR(d.kcal, globalMin, globalMax);
+      var rMin = kcalToR(rng.min, globalMin, globalMax);
+      var rMax = kcalToR(rng.max, globalMin, globalMax);
+      var minCY = CY_AVG - rAvg - GAP - rMin;
+      var maxCY = CY_AVG + rAvg + GAP + rMax;
+      return {d:d, i:i, rng:rng, rAvg:rAvg, rMin:rMin, rMax:rMax, minCY:minCY, maxCY:maxCY};
+    });
+
+    // All min country labels share top edge = top of highest min circle - 6
+    var topBase = d3.min(colData, function(c){ return c.minCY - c.rMin; }) - 6;
+    // All max country labels share same start y below the deepest max circle
+    var maxBot  = d3.max(colData, function(c){ return c.maxCY + c.rMax; });
+    var cLblY   = maxBot + 10;   // top of max country label block
+    var regLblY = cLblY + 22;   // region label y
+
+    var lineH = 10;
+    var dur2  = animate ? 500 : 0;
+
+    colData.forEach(function(c) {
+      var x     = cx(c.i);
+      var delay = animate ? c.i * 50 : 0;
+
+      // Dashed connector
+      rangeG.append("line")
+        .attr("x1",x).attr("x2",x)
+        .attr("y1", animate ? CY_AVG : c.minCY - c.rMin)
+        .attr("y2", animate ? CY_AVG : c.maxCY + c.rMax)
+        .attr("stroke","#B8BEC6").attr("stroke-width",1)
+        .attr("stroke-dasharray","3,3").attr("opacity",0.5)
+        .transition().duration(dur2).delay(delay)
+        .attr("y1", c.minCY - c.rMin).attr("y2", c.maxCY + c.rMax);
+
+      // MIN circle
+      rangeG.append("circle")
+        .attr("cx",x).attr("cy",c.minCY)
+        .attr("r", animate ? 0 : c.rMin)
+        .attr("fill",kcalColor(c.rng.min,globalMin,globalMax))
+        .attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",1.2)
+        .attr("opacity", animate ? 0 : 1)
+        .style("cursor","pointer")
+        .on("mouseover",function(ev){showPlateTooltip(ev,c.rng.minCountry+" (min)",c.rng.min,"2023");})
+        .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip)
+        .on("click",(function(_c){return function(ev){openVoronoi(_c.d.id,_c.rng.minCountry,_c.rng.min);};})(c))
+        .transition().duration(dur2).delay(delay).ease(ease)
+        .attr("r",c.rMin).attr("opacity",1);
+
+      rangeG.append("text")
+        .attr("x",x).attr("y",c.minCY)
+        .attr("text-anchor","middle").attr("dominant-baseline","middle")
+        .attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size",Math.max(7,c.rMin*0.32)+"px").attr("font-weight","700")
+        .attr("fill",textColor(c.rng.min,globalMin,globalMax))
+        .attr("pointer-events","none")
+        .attr("opacity", animate ? 0 : 1)
+        .text(d3.format(",d")(c.rng.min))
+        .transition().duration(300).delay(delay+280).attr("opacity",1);
+
+      // MIN country label — bottom edge at topBase, growing upward
+      var minLines = wrapLabel(c.rng.minCountry||"", cellW-4);
+      minLines.forEach(function(line,li){
+        rangeG.append("text")
+          .attr("x",x)
+          .attr("y", topBase - (minLines.length-1-li)*lineH)
+          .attr("text-anchor","middle")
+          .attr("font-family","'Source Sans 3',sans-serif")
+          .attr("font-size","8px").attr("font-weight","600")
+          .attr("fill","var(--grey-1)").attr("pointer-events","none")
+          .attr("opacity", animate ? 0 : 1)
+          .text(line)
+          .transition().duration(300).delay(delay+320).attr("opacity",1);
+      });
+
+      // MAX circle
+      rangeG.append("circle")
+        .attr("cx",x).attr("cy",c.maxCY)
+        .attr("r", animate ? 0 : c.rMax)
+        .attr("fill",kcalColor(c.rng.max,globalMin,globalMax))
+        .attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",1.2)
+        .attr("opacity", animate ? 0 : 1)
+        .style("cursor","pointer")
+        .on("mouseover",function(ev){showPlateTooltip(ev,c.rng.maxCountry+" (max)",c.rng.max,"2023");})
+        .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip)
+        .on("click",(function(_c){return function(ev){openVoronoi(_c.d.id,_c.rng.maxCountry,_c.rng.max);};})(c))
+        .transition().duration(dur2).delay(delay).ease(ease)
+        .attr("r",c.rMax).attr("opacity",1);
+
+      rangeG.append("text")
+        .attr("x",x).attr("y",c.maxCY)
+        .attr("text-anchor","middle").attr("dominant-baseline","middle")
+        .attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size",Math.max(7,c.rMax*0.22)+"px").attr("font-weight","700")
+        .attr("fill",textColor(c.rng.max,globalMin,globalMax))
+        .attr("pointer-events","none")
+        .attr("opacity", animate ? 0 : 1)
+        .text(d3.format(",d")(c.rng.max))
+        .transition().duration(300).delay(delay+350).attr("opacity",1);
+
+      // MAX country label — top-aligned at cLblY
+      var maxLines = wrapLabel(c.rng.maxCountry||"", cellW-4);
+      maxLines.forEach(function(line,li){
+        rangeG.append("text")
+          .attr("x",x).attr("y", cLblY + li*lineH)
+          .attr("text-anchor","middle")
+          .attr("font-family","'Source Sans 3',sans-serif")
+          .attr("font-size","8px").attr("font-weight","600")
+          .attr("fill","var(--grey-1)").attr("pointer-events","none")
+          .attr("opacity", animate ? 0 : 1)
+          .text(line)
+          .transition().duration(300).delay(delay+380).attr("opacity",1);
+      });
+
+      // Region label
+      rangeG.append("text")
+        .attr("x",x).attr("y",regLblY)
+        .attr("text-anchor","middle")
+        .attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size",Math.max(7,Math.min(9,cellW*0.11))+"px")
+        .attr("fill","var(--grey-2)").attr("pointer-events","none")
+        .attr("font-style","italic")
+        .attr("opacity", animate ? 0 : 1)
+        .text(c.d.label)
+        .transition().duration(300).delay(delay+420).attr("opacity",1);
+    });
+
+    // MIN / MAX annotations
+    annotG.selectAll(".step2-annot").remove();
+    annotG.append("text").attr("class","step2-annot")
+      .attr("x",6).attr("y",topBase-4)
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8px")
+      .attr("font-weight","700").attr("letter-spacing","0.18em")
+      .attr("fill","var(--grey-2)").text("MIN");
+    annotG.append("text").attr("class","step2-annot")
+      .attr("x",6).attr("y",regLblY)
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8px")
+      .attr("font-weight","700").attr("letter-spacing","0.18em")
+      .attr("fill","var(--grey-2)").text("MAX");
+  }
+
+  if (animate) { setTimeout(buildMinMax, minMaxDelay); } else { buildMinMax(); }
+}
+
+// Helper: wrap label text into lines
+function wrapLabel(str, maxW) {
+  var charsPerLine = Math.max(8, Math.floor(maxW / 6.5));
+  if (str.length <= charsPerLine) return [str];
+  var commaIdx = str.indexOf(",");
+  if (commaIdx > 0 && commaIdx < str.length-1)
+    return [str.slice(0,commaIdx+1).trim(), str.slice(commaIdx+1).trim()];
+  var mid = Math.floor(str.length/2);
+  var spaceIdx = str.lastIndexOf(" ", mid+4);
+  if (spaceIdx > 0) return [str.slice(0,spaceIdx).trim(), str.slice(spaceIdx).trim()];
+  return [str];
+}
+
+// ── Scrollama setup ──────────────────────────────
+function goToStep(step, animate) {
+  if (step === currentStep) return;
+  currentStep = step;
+  if (step === 0) drawStep0(animate);
+  else if (step === 1) drawStep1(animate);
+  else if (step === 2) drawStep2(animate);
+}
+
+initSVG();
+goToStep(0, false);
+
+// Scrollama
+if (typeof scrollama !== "undefined") {
+  var scroller = scrollama();
+  scroller.setup({
+    step: ".plate-step",
+    offset: 0.55,   // trigger when step card is 55% from top = roughly card centre
+    debug: false
+  }).onStepEnter(function(response) {
+    var step = +response.element.getAttribute("data-step");
+    goToStep(step, true);
+    // Activate the card for this step
+    document.querySelectorAll(".plate-step").forEach(function(el){
+      el.classList.toggle("active", +el.getAttribute("data-step") === step);
+    });
+  }).onStepExit(function(response) {
+    // When scrolling BACK (direction=up), re-activate the previous step card
+    if (response.direction === "up") {
+      document.querySelectorAll(".plate-step").forEach(function(el){
+        el.classList.remove("active");
+      });
+      var prevStep = +response.element.getAttribute("data-step") - 1;
+      var prevEl = document.querySelector(".plate-step[data-step=\""+prevStep+"\"]");
+      if (prevEl) prevEl.classList.add("active");
+    }
+  });
+} else {
+  // Fallback: IntersectionObserver if scrollama not loaded
+  var observer = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        var step = +e.target.getAttribute("data-step");
+        goToStep(step, true);
+      }
+    });
+  }, {threshold: 0.4});
+  document.querySelectorAll(".plate-step").forEach(function(el){ observer.observe(el); });
+}
+
+window.addEventListener("resize", function(){
+  clearTimeout(window._plateRt);
+  window._plateRt = setTimeout(function(){
+    initSVG();
+    var s = currentStep; currentStep = -1;
+    goToStep(s, false);
+  }, 200);
+});
+
+// ── Tooltip ──────────────────────────────────────
+var pTip = document.getElementById("plate-scroll-tip");
+function showPlateTooltip(event, label, kcal, year) {
+  if (!pTip) return;
+  pTip.innerHTML = "<strong>" + label + "</strong><br>" +
+    year + ": " + d3.format(",d")(kcal) + " kcal/capita/day";
+  pTip.style.opacity = 1;
+  movePlateTooltip(event);
+}
+function movePlateTooltip(event) {
+  if (!pTip) return;
+  var x = event.clientX + 12, y = event.clientY - 10;
+  if (x + 230 > window.innerWidth) x = event.clientX - 240;
+  if (y + 70  > window.innerHeight) y = event.clientY - 80;
+  pTip.style.left = x + "px"; pTip.style.top = y + "px";
+}
+function hidePlateTooltip() { if (pTip) pTip.style.opacity = 0; }
+
+// ── Voronoi detail (kept from previous version) ──
+var REGION_COMPOSITIONS = {
+  ssa:   {groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.48,items:[{name:"Maize/sorghum",share:0.20},{name:"Cassava/roots",share:0.16},{name:"Rice/wheat",share:0.12}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.09,items:[{name:"Groundnuts",share:0.05},{name:"Beans/lentils",share:0.04}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.14,items:[{name:"Palm oil",share:0.09},{name:"Other veg oils",share:0.05}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.07,items:[{name:"Leafy veg",share:0.04},{name:"Fruit/plantain",share:0.03}]},
+    {group:"Animal products",color:"#8C2020",share:0.11,items:[{name:"Bushmeat/beef",share:0.05},{name:"Fish",share:0.04},{name:"Dairy/eggs",share:0.02}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.11,items:[{name:"Sugar",share:0.07},{name:"Other",share:0.04}]}
+  ]},
+  india:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.54,items:[{name:"Rice",share:0.24},{name:"Wheat/chapati",share:0.20},{name:"Sorghum/millet",share:0.07},{name:"Other",share:0.03}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.09,items:[{name:"Dal/lentils",share:0.07},{name:"Chickpeas/nuts",share:0.02}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.13,items:[{name:"Mustard/palm oil",share:0.08},{name:"Ghee/butter",share:0.05}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.08,items:[{name:"Vegetables",share:0.05},{name:"Fruit",share:0.03}]},
+    {group:"Animal products",color:"#8C2020",share:0.10,items:[{name:"Dairy/milk",share:0.07},{name:"Eggs/fish/chicken",share:0.03}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.06,items:[{name:"Sugar/jaggery",share:0.05},{name:"Tea/other",share:0.01}]}
+  ]},
+  easia:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.58,items:[{name:"Rice",share:0.40},{name:"Wheat/noodles",share:0.12},{name:"Cassava",share:0.06}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.06,items:[{name:"Beans/soy",share:0.04},{name:"Nuts",share:0.02}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.11,items:[{name:"Palm/veg oils",share:0.08},{name:"Animal fats",share:0.03}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.08,items:[{name:"Vegetables",share:0.05},{name:"Fruit",share:0.03}]},
+    {group:"Animal products",color:"#8C2020",share:0.14,items:[{name:"Fish/seafood",share:0.07},{name:"Pork/poultry",share:0.05},{name:"Eggs/dairy",share:0.02}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.03,items:[{name:"Sugar",share:0.02},{name:"Other",share:0.01}]}
+  ]},
+  oeca:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.42,items:[{name:"Wheat/bread",share:0.28},{name:"Rice",share:0.08},{name:"Potatoes",share:0.06}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.04,items:[{name:"Legumes",share:0.03},{name:"Nuts",share:0.01}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.16,items:[{name:"Sunflower/veg oil",share:0.10},{name:"Animal fats",share:0.06}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.08,items:[{name:"Vegetables",share:0.05},{name:"Fruit/melon",share:0.03}]},
+    {group:"Animal products",color:"#8C2020",share:0.24,items:[{name:"Beef/mutton",share:0.10},{name:"Dairy",share:0.10},{name:"Poultry/eggs",share:0.04}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.06,items:[{name:"Sugar",share:0.05},{name:"Tea/other",share:0.01}]}
+  ]},
+  lac:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.38,items:[{name:"Maize/tortilla",share:0.14},{name:"Wheat/bread",share:0.13},{name:"Rice",share:0.07},{name:"Potatoes/roots",share:0.04}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.06,items:[{name:"Beans",share:0.05},{name:"Nuts",share:0.01}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.18,items:[{name:"Soy/sunflower oil",share:0.12},{name:"Animal fats",share:0.06}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.08,items:[{name:"Vegetables",share:0.05},{name:"Fruit/avocado",share:0.03}]},
+    {group:"Animal products",color:"#8C2020",share:0.20,items:[{name:"Beef/poultry",share:0.10},{name:"Dairy/cheese",share:0.07},{name:"Fish",share:0.03}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.10,items:[{name:"Sugar/sweeteners",share:0.07},{name:"Other",share:0.03}]}
+  ]},
+  aasia:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.36,items:[{name:"Rice",share:0.22},{name:"Wheat/noodles",share:0.10},{name:"Potatoes",share:0.04}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.05,items:[{name:"Soy/tofu",share:0.04},{name:"Other",share:0.01}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.15,items:[{name:"Veg oils",share:0.10},{name:"Animal fats",share:0.05}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.07,items:[{name:"Vegetables",share:0.05},{name:"Fruit",share:0.02}]},
+    {group:"Animal products",color:"#8C2020",share:0.27,items:[{name:"Fish/seafood",share:0.11},{name:"Dairy",share:0.09},{name:"Pork/poultry",share:0.07}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.10,items:[{name:"Sugar",share:0.06},{name:"Alcohol",share:0.04}]}
+  ]},
+  china:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.44,items:[{name:"Rice",share:0.20},{name:"Wheat/noodles",share:0.16},{name:"Other grains",share:0.05},{name:"Sweet potato",share:0.03}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.05,items:[{name:"Soybeans/tofu",share:0.03},{name:"Other",share:0.02}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.16,items:[{name:"Veg oils",share:0.13},{name:"Animal fats",share:0.03}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.07,items:[{name:"Vegetables",share:0.05},{name:"Fruit",share:0.02}]},
+    {group:"Animal products",color:"#8C2020",share:0.21,items:[{name:"Pork",share:0.10},{name:"Fish/seafood",share:0.06},{name:"Eggs/dairy",share:0.05}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.07,items:[{name:"Sugar",share:0.05},{name:"Baijiu/alcohol",share:0.02}]}
+  ]},
+  eu30:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.27,items:[{name:"Wheat/bread",share:0.16},{name:"Potatoes",share:0.07},{name:"Rye/barley",share:0.04}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.04,items:[{name:"Legumes",share:0.02},{name:"Nuts",share:0.02}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.21,items:[{name:"Veg oils",share:0.12},{name:"Butter/lard",share:0.09}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.09,items:[{name:"Vegetables",share:0.05},{name:"Fruit",share:0.04}]},
+    {group:"Animal products",color:"#8C2020",share:0.29,items:[{name:"Dairy/cheese",share:0.13},{name:"Pork/beef",share:0.10},{name:"Poultry",share:0.06}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.10,items:[{name:"Sugar",share:0.06},{name:"Beer/wine",share:0.04}]}
+  ]},
+  mena:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.44,items:[{name:"Wheat/bread",share:0.30},{name:"Rice",share:0.09},{name:"Potatoes",share:0.05}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.05,items:[{name:"Lentils/chickpeas",share:0.03},{name:"Nuts",share:0.02}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.17,items:[{name:"Veg oils",share:0.12},{name:"Olive oil",share:0.05}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.09,items:[{name:"Vegetables",share:0.05},{name:"Fruit/dates",share:0.04}]},
+    {group:"Animal products",color:"#8C2020",share:0.18,items:[{name:"Dairy",share:0.08},{name:"Poultry/lamb",share:0.07},{name:"Fish",share:0.03}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.07,items:[{name:"Sugar",share:0.05},{name:"Other",share:0.02}]}
+  ]},
+  nam:{groups:[
+    {group:"Cereals & starchy roots",color:"#C4703A",share:0.25,items:[{name:"Wheat/bread",share:0.12},{name:"Maize products",share:0.08},{name:"Rice/potatoes",share:0.05}]},
+    {group:"Pulses & nuts",color:"#8B6B3D",share:0.04,items:[{name:"Nuts",share:0.03},{name:"Legumes",share:0.01}]},
+    {group:"Oils & fats",color:"#D4C240",share:0.22,items:[{name:"Soy/veg oil",share:0.13},{name:"Butter/lard",share:0.09}]},
+    {group:"Vegetables & fruit",color:"#5A8C3C",share:0.08,items:[{name:"Vegetables",share:0.04},{name:"Fruit/juice",share:0.04}]},
+    {group:"Animal products",color:"#8C2020",share:0.29,items:[{name:"Beef/pork",share:0.12},{name:"Dairy/cheese",share:0.10},{name:"Poultry",share:0.07}]},
+    {group:"Sugar & beverages",color:"#E8C872",share:0.12,items:[{name:"HFCS/sugar",share:0.09},{name:"Alcohol",share:0.03}]}
+  ]}
+};
+
+function makePlateFromRegion(regionId, kcal) {
+  var comp = REGION_COMPOSITIONS[regionId];
+  if (!comp) return null;
+  return comp.groups.map(function(g){
+    return {
+      group:g.group, color:g.color, share:g.share,
+      kcal:Math.round(kcal*g.share),
+      items:g.items.map(function(it){
+        return {name:it.name, share:it.share, kcal:Math.round(kcal*it.share)};
+      })
+    };
+  });
+}
+
+function openVoronoi(regionId, label, kcal) {
+  var overlay = document.getElementById("plate-voronoi-overlay");
+  var svgVor  = document.getElementById("plate-voronoi-svg");
+  var legend  = document.getElementById("plate-voronoi-legend");
+  if (!overlay || !svgVor) return;
+
+  document.getElementById("plate-voronoi-country").textContent = label;
+  document.getElementById("plate-voronoi-kcal").textContent =
+    d3.format(",d")(kcal) + " kcal / capita / day";
+
+  var plate = makePlateFromRegion(regionId, kcal);
+  if (!plate) return;
+
+  var SIZE = Math.min(420, window.innerWidth * 0.45 - 40);
+  svgVor.setAttribute("width",SIZE);
+  svgVor.setAttribute("height",SIZE);
+  svgVor.setAttribute("viewBox","0 0 "+SIZE+" "+SIZE);
+
+  var vSvg = d3.select("#plate-voronoi-svg");
+  vSvg.selectAll("*").remove();
+
+  var defs = vSvg.append("defs");
+  defs.append("clipPath").attr("id","pv-clip2")
+    .append("circle").attr("cx",SIZE/2).attr("cy",SIZE/2).attr("r",SIZE/2-1);
+
+  var g = vSvg.append("g").attr("clip-path","url(#pv-clip2)");
+
+  var items=[];
+  plate.forEach(function(grp){
+    grp.items.forEach(function(it){
+      items.push({name:it.name,group:grp.group,color:grp.color,share:it.share,kcal:it.kcal});
+    });
+  });
+
+  function seededRng(seed){return function(){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return(seed>>>0)/0xFFFFFFFF;};}
+  var rng=seededRng(42);
+  var cx2=SIZE/2,cy2=SIZE/2,rad=SIZE/2-2;
+  var cum=[];var cs=0;
+  items.forEach(function(it){cs+=it.share;cum.push(cs);});
+
+  var pts=[];var att=0;
+  while(pts.length<500&&att<30000){
+    att++;
+    var u=rng()*2*Math.PI,r2=rad*Math.sqrt(rng());
+    var px=cx2+r2*Math.cos(u),py=cy2+r2*Math.sin(u);
+    var rv=rng(),idx=0;
+    for(var ii=0;ii<cum.length;ii++){if(rv<=cum[ii]){idx=ii;break;}}
+    pts.push({x:px,y:py,item:items[idx]});
+  }
+
+  var vor2=d3.Delaunay.from(pts,function(p){return p.x;},function(p){return p.y;}).voronoi([0,0,SIZE,SIZE]);
+  pts.forEach(function(p,i){
+    g.append("path").attr("d",vor2.renderCell(i))
+      .attr("fill",p.item.color).attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",0.5)
+      .on("mouseover",function(event){
+        var tip=document.getElementById("plate-voronoi-tooltip");
+        if(tip){tip.innerHTML="<strong>"+p.item.name+"</strong><br>"+p.item.group+"<br>"+Math.round(p.item.share*100)+"% · "+p.item.kcal+" kcal/day";tip.style.opacity=1;tip.style.left=(event.clientX+12)+"px";tip.style.top=(event.clientY-10)+"px";}
+      })
+      .on("mousemove",function(event){var tip=document.getElementById("plate-voronoi-tooltip");if(tip){tip.style.left=(event.clientX+12)+"px";tip.style.top=(event.clientY-10)+"px";}})
+      .on("mouseout",function(){var tip=document.getElementById("plate-voronoi-tooltip");if(tip)tip.style.opacity=0;});
+  });
+
+  var gc={};var gct={};
+  pts.forEach(function(p){var k=p.item.group;if(!gc[k]){gc[k]={x:0,y:0,color:p.item.color};gct[k]=0;}gc[k].x+=p.x;gc[k].y+=p.y;gct[k]++;});
+  Object.keys(gc).forEach(function(k){
+    var ex=gc[k].x/gct[k],ey=gc[k].y/gct[k];
+    var d2=Math.sqrt((ex-cx2)*(ex-cx2)+(ey-cy2)*(ey-cy2));
+    if(d2<rad*0.88){
+      var s=plate.find(function(gr){return gr.group===k;});
+      g.append("text").attr("x",ex).attr("y",ey).attr("text-anchor","middle").attr("dominant-baseline","middle")
+        .attr("fill","rgba(255,255,255,0.9)").attr("font-size",Math.max(8,Math.min(11,600*(s?s.share:0.1)*SIZE/420))+"px")
+        .attr("font-weight","700").attr("font-family","'Source Sans 3',sans-serif").attr("pointer-events","none")
+        .text(k.split(" ")[0]);
+    }
+  });
+
+  legend.innerHTML="";
+  plate.forEach(function(grp){
+    var div=document.createElement("div");div.className="plate-vleg-group";
+    var tDiv=document.createElement("div");tDiv.className="plate-vleg-group-title";
+    var sw=document.createElement("span");sw.className="plate-vleg-swatch";sw.style.background=grp.color;
+    tDiv.appendChild(sw);tDiv.appendChild(document.createTextNode(grp.group));
+    div.appendChild(tDiv);
+    grp.items.forEach(function(it){
+      var row=document.createElement("div");row.className="plate-vleg-item";
+      var ns=document.createElement("span");ns.textContent=it.name;
+      var ps=document.createElement("span");ps.className="plate-vleg-item-pct";ps.textContent=Math.round(it.share*100)+"%";
+      row.appendChild(ns);row.appendChild(ps);div.appendChild(row);
+    });
+    legend.appendChild(div);
+  });
+
+  overlay.classList.add("active");
+}
+
+document.getElementById("plate-voronoi-close").addEventListener("click",function(){document.getElementById("plate-voronoi-overlay").classList.remove("active");});
+document.getElementById("plate-voronoi-overlay").addEventListener("click",function(e){if(e.target===this)this.classList.remove("active");});
+
+})();
+
 </script>
 </body>
 </html>
