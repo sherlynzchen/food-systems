@@ -693,12 +693,39 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
   font-family: 'Source Sans 3',sans-serif; transition: all 0.15s;
 }
 .plate-voronoi-close:hover { border-color: var(--ink); color: var(--ink); }
-.plate-voronoi-header { margin-bottom: 1rem; }
+.plate-voronoi-header { margin-bottom: 0.7rem; }
 .plate-voronoi-country {
   font-family: 'Libre Baskerville',serif;
   font-size: 1.35rem; font-weight: 700; color: var(--ink);
 }
 .plate-voronoi-kcal { font-size: 0.8rem; color: var(--grey-2); margin-top: 0.15rem; }
+/* Year flip controls */
+.plate-year-flip {
+  display: flex; align-items: center; gap: 0; margin: 0.6rem 0 1rem;
+}
+.plate-year-btn {
+  background: none; border: 1px solid var(--grey-3);
+  color: var(--grey-1); font-size: 0.75rem; font-weight: 700;
+  font-family: 'Source Sans 3',sans-serif;
+  padding: 0.28rem 0.9rem; cursor: pointer; transition: all 0.15s;
+  letter-spacing: 0.06em;
+}
+.plate-year-btn:first-child { border-radius: 2px 0 0 2px; border-right: none; }
+.plate-year-btn:last-child  { border-radius: 0 2px 2px 0; }
+.plate-year-btn.active {
+  background: var(--blue-1); border-color: var(--blue-1);
+  color: var(--white);
+}
+.plate-year-arrow {
+  font-size: 1rem; color: var(--grey-2); padding: 0 0.5rem; user-select: none;
+}
+.plate-year-delta {
+  font-size: 0.72rem; font-weight: 700; font-family: 'Source Sans 3',sans-serif;
+  margin-left: 0.7rem;
+}
+.plate-year-delta.pos { color: #2A7A3A; }
+.plate-year-delta.neg { color: #C0392B; }
+.plate-year-delta.neu { color: var(--grey-2); }
 .plate-voronoi-chart-wrap {
   display: grid; grid-template-columns: 1fr 220px; gap: 1.6rem; align-items: start;
 }
@@ -928,6 +955,12 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
         <div class="plate-voronoi-header">
           <div class="plate-voronoi-country" id="plate-voronoi-country"></div>
           <div class="plate-voronoi-kcal" id="plate-voronoi-kcal"></div>
+        </div>
+        <div class="plate-year-flip">
+          <button class="plate-year-btn" id="pv-btn-2010">2010</button>
+          <span class="plate-year-arrow">&#8594;</span>
+          <button class="plate-year-btn active" id="pv-btn-2023">2023</button>
+          <span class="plate-year-delta" id="pv-delta"></span>
         </div>
         <div class="plate-voronoi-chart-wrap">
           <svg class="plate-voronoi-svg" id="plate-voronoi-svg"></svg>
@@ -2919,561 +2952,561 @@ function initSVG() {
 }
 
 // ══════════════════════════════════════════════════════════════
-// DRAW STRATEGY: SVG is always W × H (viewport-sized, never grows).
-// All content lives in a tall "world" coordinate space.
-// We animate the viewBox to pan/zoom to the relevant slice.
+// DRAW APPROACH: SVG is ALWAYS exactly W × H. No viewBox changes.
+// Step 0: single row of 2010 circles at CY
+// Step 1: two rows (2010 top-quarter, 2023 bottom-quarter), all fit in H
+// Step 2: three rows (min top, grey-avg middle, max bottom), all fit in H
 // ══════════════════════════════════════════════════════════════
 
-// World height — enough for step-1 two rows + step-2 min/avg/max stack
-// Recalculated in each draw call from current maxR.
-function worldH() { return H * 3.2; }
-
-// Smooth viewBox transition helper
-function animateViewBox(x, y, w, h, dur, ease) {
-  svg.transition().duration(dur || 0).ease(ease || d3.easeCubicInOut)
-    .attrTween("viewBox", function() {
-      var cur = (svgEl.getAttribute("viewBox") || ("0 0 "+W+" "+H)).split(" ").map(Number);
-      var target = [x, y, w, h];
-      return function(t) {
-        return cur.map(function(c,i){ return c + (target[i]-c)*t; }).join(" ");
-      };
-    });
-}
-
-// Snap viewBox with no animation
-function snapViewBox(x, y, w, h) {
-  svgEl.setAttribute("viewBox", x+" "+y+" "+w+" "+h);
-}
-
-// ── Step 0: 2010 avg row, centred in viewport ─────────────────
-function drawStep0(animate) {
-  // SVG always W × H
+function snapViewBox() {
   svgEl.setAttribute("width",  W);
   svgEl.setAttribute("height", H);
-  snapViewBox(0, 0, W, H);
+  svgEl.setAttribute("viewBox", "0 0 " + W + " " + H);
+}
 
-  // Clean up step-1 / step-2 / step-3 elements
-  circlesG.selectAll(".plate-circ-2010,.plate-circ-2023").remove();
-  circlesG.selectAll(".kcal-2010,.kcal-2023,.kcal-lbl-2023").remove();
-  circlesG.selectAll(".conn-g,.conn-layer").remove();
-  labelsG.selectAll(".reg-2010,.reg-2023,.reg-lbl-2023,.year-lbl-2010,.year-lbl-2023").remove();
-  rangeG.selectAll("*").remove();
+// ── Shared global scale across ALL steps so circles never resize ──
+// Use the full range of all values (2010 avg, 2023 avg, 2023 range) for radius scale
+var GLOBAL_MIN, GLOBAL_MAX;
+function computeGlobalScale() {
+  var all = DATA_2010_AVG.map(function(d){return d.kcal;})
+    .concat(DATA_2023_AVG.map(function(d){return d.kcal;}));
+  Object.keys(DATA_2023_RANGE).forEach(function(k){
+    all.push(DATA_2023_RANGE[k].min, DATA_2023_RANGE[k].max);
+  });
+  GLOBAL_MIN = d3.min(all);
+  GLOBAL_MAX = d3.max(all);
+}
 
-  var allMin = d3.min(SORTED_2010, function(d){return d.kcal;});
-  var allMax = d3.max(SORTED_2010, function(d){return d.kcal;});
-  var dur  = animate ? 700 : 0;
+// ── Step 0: 2010 avg, single centred row ─────────────────────
+function drawStep0(animate) {
+  snapViewBox();
+  computeGlobalScale();
+  var dur  = animate ? 650 : 0;
   var ease = d3.easeCubicInOut;
 
-  rangeG.transition().duration(dur).style("opacity",0)
-    .on("end",function(){rangeG.selectAll("*").remove();});
+  // Remove all step-1/2 elements
+  svg.selectAll(".s1-elem,.s2-elem").remove();
+  rangeG.selectAll("*").remove();
   annotG.selectAll("*").remove();
 
-  var circles = circlesG.selectAll(".plate-circ").data(SORTED_2010, function(d){return d.id;});
+  // Circles
+  var circles = circlesG.selectAll(".s0-circ").data(SORTED_2010, function(d){return d.id;});
+  var cEnter  = circles.enter().append("circle").attr("class","s0-circ")
+    .attr("cx", function(d,i){return cx(i);}).attr("cy",CY).attr("r",0).attr("opacity",0)
+    .style("cursor","default");
 
-  var enter = circles.enter().append("circle").attr("class","plate-circ")
-    .attr("cx", function(d,i){return cx(i);})
-    .attr("cy", CY).attr("r", 0).attr("opacity", 0)
-    .style("cursor","pointer")
-    .on("click",   function(event,d){ openVoronoi(d.id, d.label, d.kcal); })
-    .on("mouseover",function(event,d){ showPlateTooltip(event, d.label, d.kcal, "2010"); })
-    .on("mousemove", movePlateTooltip)
-    .on("mouseout",  hidePlateTooltip);
-
-  enter.merge(circles)
-    .transition().duration(dur).ease(ease)
-    .attr("cx", function(d,i){return cx(i);})
-    .attr("cy", CY)
-    .attr("r",   function(d){return kcalToR(d.kcal, allMin, allMax);})
-    .attr("fill",function(d){return kcalColor(d.kcal, allMin, allMax);})
-    .attr("stroke","rgba(255,255,255,0.3)").attr("stroke-width",1.5)
-    .attr("opacity",1);
-
+  cEnter.merge(circles).transition().duration(dur).ease(ease)
+    .attr("cx",function(d,i){return cx(i);}).attr("cy",CY)
+    .attr("r",  function(d){return kcalToR(d.kcal,GLOBAL_MIN,GLOBAL_MAX);})
+    .attr("fill",function(d){return kcalColor(d.kcal,GLOBAL_MIN,GLOBAL_MAX);})
+    .attr("stroke","rgba(255,255,255,0.3)").attr("stroke-width",1.5).attr("opacity",1);
   circles.exit().transition().duration(dur).attr("r",0).attr("opacity",0).remove();
 
-  // Region labels
-  var lbls   = labelsG.selectAll(".reg-lbl").data(SORTED_2010, function(d){return d.id;});
-  var lEnter = lbls.enter().append("text").attr("class","reg-lbl")
-    .attr("text-anchor","middle")
-    .attr("font-family","'Source Sans 3',sans-serif")
-    .attr("fill","var(--grey-2)").attr("opacity",0);
-
-  lEnter.merge(lbls).transition().duration(dur).ease(ease)
-    .attr("x", function(d,i){return cx(i);})
-    .attr("y", function(d){return CY + kcalToR(d.kcal, allMin, allMax) + 15;})
-    .attr("font-size", Math.max(8, Math.min(10, cellW*0.12))+"px")
-    .attr("opacity",1)
-    .text(function(d){return d.label;});
-  lbls.exit().remove();
-
-  // kcal labels inside circles
-  var klbls  = circlesG.selectAll(".kcal-lbl").data(SORTED_2010, function(d){return d.id;});
-  var kEnter = klbls.enter().append("text").attr("class","kcal-lbl")
+  // kcal labels
+  var kl    = circlesG.selectAll(".s0-klbl").data(SORTED_2010,function(d){return d.id;});
+  var klE   = kl.enter().append("text").attr("class","s0-klbl")
     .attr("text-anchor","middle").attr("dominant-baseline","middle")
-    .attr("font-family","'Source Sans 3',sans-serif")
-    .attr("font-weight","700").attr("pointer-events","none").attr("opacity",0);
-
-  kEnter.merge(klbls).transition().duration(dur).ease(ease)
-    .attr("x", function(d,i){return cx(i);})
-    .attr("y", CY)
-    .attr("font-size", function(d){return Math.max(7, kcalToR(d.kcal,allMin,allMax)*0.28)+"px";})
-    .attr("fill", function(d){return textColor(d.kcal, allMin, allMax);})
-    .attr("opacity",1)
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
+    .attr("pointer-events","none").attr("opacity",0);
+  klE.merge(kl).transition().duration(dur).ease(ease)
+    .attr("x",function(d,i){return cx(i);}).attr("y",CY)
+    .attr("font-size",function(d){return Math.max(7,kcalToR(d.kcal,GLOBAL_MIN,GLOBAL_MAX)*0.28)+"px";})
+    .attr("fill",function(d){return textColor(d.kcal,GLOBAL_MIN,GLOBAL_MAX);}).attr("opacity",1)
     .text(function(d){return d3.format(",d")(d.kcal);});
-  klbls.exit().remove();
+  kl.exit().remove();
+
+  // Region labels
+  // Region labels — multi-line wrapped, top-aligned below circle
+  labelsG.selectAll(".s0-rlbl").remove();
+  var rlFs = Math.max(7, Math.min(9, cellW*0.11));
+  var rlLh = rlFs + 2;
+  SORTED_2010.forEach(function(d,i){
+    var r     = kcalToR(d.kcal, GLOBAL_MIN, GLOBAL_MAX);
+    var lines = wrapLabel13(d.label);
+    var topY  = CY + r + 12;   // 12px gap below circle edge
+    lines.forEach(function(line, li){
+      labelsG.append("text").attr("class","s0-rlbl")
+        .attr("x", cx(i)).attr("y", topY + li * rlLh)
+        .attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size", rlFs+"px")
+        .attr("fill","var(--grey-2)").attr("opacity", animate ? 0 : 1)
+        .text(line)
+        .transition().duration(dur).ease(ease).attr("opacity",1);
+    });
+  });
 
   // Year badge
-  annotG.selectAll("*").remove();
-  var badge = annotG.append("text")
-    .attr("x", W-12).attr("y", 22).attr("text-anchor","end")
-    .attr("font-family","'Libre Baskerville',serif")
-    .attr("font-size","1.5rem").attr("font-weight","700")
-    .attr("fill","var(--ink)").attr("opacity", animate ? 0 : 1).text("2010");
-  if (animate) badge.transition().duration(400).delay(300).attr("opacity",1);
-  annotG.append("text").attr("x",W-12).attr("y",40).attr("text-anchor","end")
-    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.68rem")
+  annotG.append("text").attr("x",W-10).attr("y",22).attr("text-anchor","end")
+    .attr("font-family","'Libre Baskerville',serif").attr("font-size","1.5rem")
+    .attr("font-weight","700").attr("fill","var(--ink)").text("2010");
+  annotG.append("text").attr("x",W-10).attr("y",40).attr("text-anchor","end")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.65rem")
     .attr("fill","var(--grey-2)").text("kcal / capita / day · regional average");
 }
 
-// ── Step 1: two rows in world-space, viewBox shows 2010 first then pans to show both ──
+// ── Step 1: two rows side-by-side in H, Bézier connectors ─────
 function drawStep1(animate) {
-  svgEl.setAttribute("width",  W);
-  svgEl.setAttribute("height", H);
-
-  var WH = worldH();       // total world height
-  var globalMin = Math.min(
-    d3.min(DATA_2010_AVG,function(d){return d.kcal;}),
-    d3.min(DATA_2023_AVG,function(d){return d.kcal;})
-  );
-  var globalMax = Math.max(
-    d3.max(DATA_2010_AVG,function(d){return d.kcal;}),
-    d3.max(DATA_2023_AVG,function(d){return d.kcal;})
-  );
-
-  // Two rows: 2010 near top of world, 2023 near bottom
-  var ROW_TOP = WH * 0.22;
-  var ROW_BOT = WH * 0.78;
-
-  var S23 = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal-b.kcal;});
-  var pos10 = {}, pos23 = {};
-  SORTED_2010.forEach(function(d,i){ pos10[d.id]=i; });
-  S23.forEach(function(d,i){ pos23[d.id]=i; });
-
-  var dur  = animate ? 700 : 0;
+  snapViewBox();
+  computeGlobalScale();
   var ease = d3.easeCubicInOut;
 
-  // Start: viewBox centred on 2010 row (from step 0 position)
-  if (animate) snapViewBox(0, 0, W, H);
+  // Row positions: fit two rows + labels in H
+  // Allow for region label above 2010 row and below 2023 row
+  var lblH  = 14;  // label height
+  var pad   = 8;   // top/bottom padding
+  var R     = maxR; // max possible radius
+  // Two rows: 2010 at 28% down, 2023 at 72% down
+  var Y10   = pad + lblH + R + (H - 2*(pad+lblH+2*R)) * 0.20 + R;
+  var Y23   = H - pad - lblH - R - (H - 2*(pad+lblH+2*R)) * 0.20 - R;
+  // Simpler: just split H into equal thirds
+  Y10 = H * 0.26;
+  Y23 = H * 0.74;
 
-  // Clear leftovers
+  var S23   = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal-b.kcal;});
+  var pos10 = {}, pos23 = {};
+  SORTED_2010.forEach(function(d,i){pos10[d.id]=i;});
+  S23.forEach(function(d,i){pos23[d.id]=i;});
+
+  var dur = animate ? 650 : 0;
+
+  // Remove step 0 elements
+  svg.selectAll(".s0-circ,.s0-klbl,.s0-rlbl,.s2-elem").remove();
   rangeG.selectAll("*").remove();
   annotG.selectAll("*").remove();
-  circlesG.selectAll(".plate-circ-2010,.plate-circ-2023,.kcal-2010,.kcal-2023").remove();
-  circlesG.selectAll(".conn-g").remove();
-  labelsG.selectAll(".reg-2010,.reg-2023,.year-lbl-2010,.year-lbl-2023").remove();
-  circlesG.selectAll(".plate-circ,.kcal-lbl").remove();
-  labelsG.selectAll(".reg-lbl").remove();
 
-  // ── Draw connectors (initially invisible) ─────────────────────
-  var RC = {
-    india:"#B85C00", ssa:"#C4703A",  easia:"#8B6B3D",
-    lac:"#5A8C3C",   oeca:"#3A7CA8", aasia:"#8C2020",
-    china:"#E07840", eu30:"#556B2F", mena:"#D4A020",  nam:"#002960"
-  };
-  var connG = circlesG.append("g").attr("class","conn-g").attr("opacity",0);
-  var midY  = (ROW_TOP + ROW_BOT) / 2;
+  // ── Connectors: green = rank improves, red = rank falls, grey = no change ──
+  // "rank improves" means higher calorie rank in 2023 (moves right) → pos23 > pos10
+  var connG = svg.insert("g",".circles-g").attr("class","s1-elem conn-layer");
+  var midY  = (Y10 + Y23) / 2;
 
-  SORTED_2010.forEach(function(d) {
-    var x1    = cx(pos10[d.id]);
-    var x2    = cx(pos23[d.id]);
-    var col   = RC[d.id] || "#888";
-    var moved = pos10[d.id] !== pos23[d.id];
-    var pathD = "M"+x1+","+ROW_TOP+" C"+x1+","+midY+" "+x2+","+midY+" "+x2+","+ROW_BOT;
+  SORTED_2010.forEach(function(d){
+    var x1    = cx(pos10[d.id]), x2 = cx(pos23[d.id]);
+    var delta = pos23[d.id] - pos10[d.id];
+    var moved = delta !== 0;
+    var stroke = moved ? (delta > 0 ? "#2A7A3A" : "#C0392B") : "#B0B8C2";
+    var sw     = moved ? 2.2 : 1.0;
+    var so     = moved ? 0.70 : 0.20;
+    // Use circle-edge endpoints so curves don't show through translucent plates
+    var r10    = kcalToR(d.kcal, GLOBAL_MIN, GLOBAL_MAX);
+    var d23    = DATA_2023_AVG.find(function(x){return x.id===d.id;});
+    var r23    = d23 ? kcalToR(d23.kcal, GLOBAL_MIN, GLOBAL_MAX) : r10;
+    var yStart = Y10 + r10;   // bottom edge of 2010 circle
+    var yEnd   = Y23 - r23;   // top edge of 2023 circle
     var pathEl = connG.append("path")
-      .attr("d", pathD).attr("fill","none")
-      .attr("stroke",col)
-      .attr("stroke-width", moved ? 2.2 : 1.2)
-      .attr("stroke-opacity", moved ? 0.65 : 0.22);
-    var node = pathEl.node();
-    var len  = node ? node.getTotalLength() : 600;
-    pathEl.attr("stroke-dasharray", len).attr("stroke-dashoffset", len);
+      .attr("d","M"+x1+","+yStart+" C"+x1+","+midY+" "+x2+","+midY+" "+x2+","+yEnd)
+      .attr("fill","none").attr("stroke",stroke)
+      .attr("stroke-width",sw).attr("stroke-opacity",so);
+    var len = pathEl.node() ? pathEl.node().getTotalLength() : 500;
+    pathEl.attr("stroke-dasharray",len).attr("stroke-dashoffset",len);
   });
 
   // ── 2010 row ──────────────────────────────────────────────────
-  SORTED_2010.forEach(function(d,i) {
-    var r = kcalToR(d.kcal, globalMin, globalMax);
-    circlesG.append("circle").attr("class","plate-circ-2010")
-      .attr("cx",cx(i)).attr("cy",ROW_TOP).attr("r",r)
-      .attr("fill",kcalColor(d.kcal,globalMin,globalMax))
+  SORTED_2010.forEach(function(d,i){
+    var r = kcalToR(d.kcal,GLOBAL_MIN,GLOBAL_MAX);
+    // Circle enters from CY (step 0 position), moves to Y10
+    circlesG.append("circle").attr("class","s1-elem s1-c10")
+      .attr("cx",cx(i)).attr("cy",animate?CY:Y10).attr("r",r)
+      .attr("fill",kcalColor(d.kcal,GLOBAL_MIN,GLOBAL_MAX))
       .attr("stroke","rgba(255,255,255,0.3)").attr("stroke-width",1.5)
-      .attr("opacity",0.8).style("cursor","pointer")
-      .on("click",(function(_d){return function(ev){openVoronoi(_d.id,_d.label,_d.kcal);};})(d))
-      .on("mouseover",(function(_d){return function(ev){showPlateTooltip(ev,_d.label,_d.kcal,"2010");};})(d))
-      .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip);
+      .attr("opacity",animate?0.9:0.8).style("cursor","default")
+      .transition().duration(dur).ease(ease).attr("cy",Y10).attr("opacity",0.8);
 
-    circlesG.append("text").attr("class","kcal-2010")
-      .attr("x",cx(i)).attr("y",ROW_TOP)
+    circlesG.append("text").attr("class","s1-elem s1-k10")
+      .attr("x",cx(i)).attr("y",animate?CY:Y10)
       .attr("text-anchor","middle").attr("dominant-baseline","middle")
       .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
       .attr("pointer-events","none")
       .attr("font-size",Math.max(7,r*0.26)+"px")
-      .attr("fill",textColor(d.kcal,globalMin,globalMax)).attr("opacity",0.8)
-      .text(d3.format(",d")(d.kcal));
+      .attr("fill",textColor(d.kcal,GLOBAL_MIN,GLOBAL_MAX))
+      .attr("opacity",animate?0.9:0.8).text(d3.format(",d")(d.kcal))
+      .transition().duration(dur).ease(ease).attr("y",Y10).attr("opacity",0.8);
 
-    labelsG.append("text").attr("class","reg-2010")
-      .attr("x",cx(i)).attr("y",ROW_TOP - r - 10)
-      .attr("text-anchor","middle")
-      .attr("font-family","'Source Sans 3',sans-serif")
-      .attr("font-size",Math.max(7,Math.min(9,cellW*0.11))+"px")
-      .attr("fill","var(--grey-2)").attr("opacity",0.75).text(d.label);
+    // Region label 2010 — multi-line, BOTTOM-aligned (last line touches circle)
+    var lbl10lines = wrapLabel13(d.label);
+    var lbl10fs    = Math.max(7, Math.min(9, cellW*0.11));
+    var lbl10lh    = lbl10fs + 2;
+    // Bottom of last line = Y10 - r - 4; lines stack upward
+    lbl10lines.forEach(function(line, li) {
+      var lineY = (Y10 - r - 10) - (lbl10lines.length - 1 - li) * lbl10lh;
+      labelsG.append("text").attr("class","s1-elem")
+        .attr("x",cx(i)).attr("y",lineY)
+        .attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size",lbl10fs+"px")
+        .attr("fill","var(--grey-2)").attr("opacity",animate?0:0.75)
+        .text(line)
+        .transition().duration(dur).ease(ease).attr("opacity",0.75);
+    });
   });
 
-  labelsG.append("text").attr("class","year-lbl-2010")
-    .attr("x",4).attr("y",ROW_TOP).attr("dominant-baseline","middle")
+  // "2010" label above the top row
+  labelsG.append("text").attr("class","s1-elem")
+    .attr("x",4).attr("y",Y10 - maxR - 20)
+    .attr("dominant-baseline","auto")
     .attr("font-family","'Libre Baskerville',serif")
-    .attr("font-size","0.9rem").attr("font-weight","700")
-    .attr("fill","var(--grey-2)").attr("opacity",0.9).text("2010");
+    .attr("font-size","0.85rem").attr("font-weight","700")
+    .attr("fill","var(--grey-2)").attr("opacity",animate?0:0.85)
+    .text("2010").transition().duration(dur).delay(animate?200:0).attr("opacity",0.85);
 
   // ── 2023 row ──────────────────────────────────────────────────
-  S23.forEach(function(d,i) {
-    var r = kcalToR(d.kcal, globalMin, globalMax);
-    circlesG.append("circle").attr("class","plate-circ-2023")
-      .attr("cx",cx(i)).attr("cy",ROW_BOT).attr("r",r)
-      .attr("fill",kcalColor(d.kcal,globalMin,globalMax))
+  S23.forEach(function(d,i){
+    var r = kcalToR(d.kcal,GLOBAL_MIN,GLOBAL_MAX);
+    circlesG.append("circle").attr("class","s1-elem s1-c23")
+      .attr("cx",cx(i)).attr("cy",animate?H+r:Y23).attr("r",r)
+      .attr("fill",kcalColor(d.kcal,GLOBAL_MIN,GLOBAL_MAX))
       .attr("stroke","rgba(255,255,255,0.35)").attr("stroke-width",1.5)
-      .attr("opacity",1).style("cursor","pointer")
-      .on("click",(function(_d){return function(ev){openVoronoi(_d.id,_d.label,_d.kcal);};})(d))
-      .on("mouseover",(function(_d){return function(ev){showPlateTooltip(ev,_d.label,_d.kcal,"2023");};})(d))
-      .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip);
+      .attr("opacity",animate?0:1).style("cursor","default")
+      .transition().duration(dur).ease(ease).delay(animate?80:0).attr("cy",Y23).attr("opacity",1);
 
-    circlesG.append("text").attr("class","kcal-2023")
-      .attr("x",cx(i)).attr("y",ROW_BOT)
+    circlesG.append("text").attr("class","s1-elem s1-k23")
+      .attr("x",cx(i)).attr("y",animate?H+r:Y23)
       .attr("text-anchor","middle").attr("dominant-baseline","middle")
       .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
       .attr("pointer-events","none")
       .attr("font-size",Math.max(7,r*0.26)+"px")
-      .attr("fill",textColor(d.kcal,globalMin,globalMax)).attr("opacity",1)
-      .text(d3.format(",d")(d.kcal));
+      .attr("fill",textColor(d.kcal,GLOBAL_MIN,GLOBAL_MAX))
+      .attr("opacity",animate?0:1).text(d3.format(",d")(d.kcal))
+      .transition().duration(dur).ease(ease).delay(animate?80:0).attr("y",Y23).attr("opacity",1);
 
-    labelsG.append("text").attr("class","reg-2023")
-      .attr("x",cx(i)).attr("y",ROW_BOT + r + 13)
-      .attr("text-anchor","middle")
-      .attr("font-family","'Source Sans 3',sans-serif")
-      .attr("font-size",Math.max(7,Math.min(9,cellW*0.11))+"px")
-      .attr("fill","var(--grey-1)").attr("opacity",1).text(d.label);
+    // Region label 2023 — multi-line, TOP-aligned (first line just below circle)
+    var lbl23lines = wrapLabel13(d.label);
+    var lbl23fs    = Math.max(7, Math.min(9, cellW*0.11));
+    var lbl23lh    = lbl23fs + 2;
+    var lbl23top   = Y23 + r + 12;  // top of first label line
+    lbl23lines.forEach(function(line, li) {
+      labelsG.append("text").attr("class","s1-elem")
+        .attr("x",cx(i)).attr("y",lbl23top + li * lbl23lh)
+        .attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size",lbl23fs+"px")
+        .attr("fill","var(--grey-1)").attr("opacity",animate?0:1)
+        .text(line)
+        .transition().duration(dur).ease(ease).delay(animate?120:0).attr("opacity",1);
+    });
+
+    // % change below all label lines
+    var d2010match = DATA_2010_AVG.find(function(x){return x.id===d.id;});
+    if (d2010match) {
+      var pct    = Math.round((d.kcal - d2010match.kcal) / d2010match.kcal * 100);
+      var pctStr = (pct >= 0 ? "+" : "") + pct + "%";
+      var pctCol = pct > 0 ? "#2A7A3A" : (pct < 0 ? "#C0392B" : "#888");
+      var pctY   = lbl23top + lbl23lines.length * lbl23lh + 2;
+      labelsG.append("text").attr("class","s1-elem")
+        .attr("x",cx(i)).attr("y",pctY)
+        .attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif")
+        .attr("font-size","8px").attr("font-weight","700")
+        .attr("fill",pctCol).attr("opacity",animate?0:1)
+        .text(pctStr)
+        .transition().duration(dur).ease(ease).delay(animate?160:0).attr("opacity",1);
+    }
   });
 
-  labelsG.append("text").attr("class","year-lbl-2023")
-    .attr("x",4).attr("y",ROW_BOT).attr("dominant-baseline","middle")
+  // "2023" year badge — below region labels + % change (2 label lines + pct = ~40px)
+  labelsG.append("text").attr("class","s1-elem")
+    .attr("x",4).attr("y",Y23 + maxR + 44)
+    .attr("dominant-baseline","auto")
     .attr("font-family","'Libre Baskerville',serif")
-    .attr("font-size","0.9rem").attr("font-weight","700")
-    .attr("fill","var(--ink)").attr("opacity",1).text("2023");
+    .attr("font-size","0.85rem").attr("font-weight","700")
+    .attr("fill","var(--ink)").attr("opacity",animate?0:1)
+    .text("2023").transition().duration(dur).delay(animate?300:0).attr("opacity",1);
 
-  annotG.append("text").attr("x",W-12).attr("y",ROW_BOT-maxR-30)
-    .attr("text-anchor","end")
-    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.68rem")
+  annotG.append("text").attr("x",W-10).attr("y",14).attr("text-anchor","end")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.65rem")
     .attr("fill","var(--grey-2)").text("Curves show rank changes 2010 → 2023");
 
-  // ── Animation sequence ────────────────────────────────────────
-  // Phase A (if animate): viewBox starts showing 2010 row, then pans to show both rows
-  // The world is WH tall. We want to show a viewport of H px.
-  // "show 2010 only" → viewBox y = ROW_TOP - H*0.5 (centre on 2010 row)
-  // "show both"      → viewBox y = ROW_TOP - H*0.18 (2010 near top, 2023 visible below)
-  var vb_2010_only = [0, ROW_TOP - H*0.5,  W, H];
-  var vb_both      = [0, ROW_TOP - H*0.18, W, H * (ROW_BOT - ROW_TOP + H*0.4) / H];
-  // Clamp: show the full span between rows + some padding, scaled to fit H
-  var span         = (ROW_BOT + maxR + 20) - (ROW_TOP - maxR - 20);
-  var scale        = Math.max(1, span / (H * 0.85));
-  var vbH_both     = H * scale;
-  var vbY_both     = ROW_TOP - maxR - 20;
-
+  // Reveal connectors after both rows have settled
   if (animate) {
-    // Start centred on 2010 row
-    snapViewBox(vb_2010_only[0], vb_2010_only[1], W, H);
-
-    // After a beat, pan+zoom out to show both rows
     setTimeout(function(){
-      animateViewBox(0, vbY_both, W, vbH_both, 900, d3.easeCubicInOut);
-
-      // After pan completes, draw connectors
-      setTimeout(function(){
-        connG.attr("opacity",1)
-          .selectAll("path")
-          .transition().duration(650).ease(d3.easeQuadInOut)
-          .attr("stroke-dashoffset", 0);
-      }, 950);
-    }, 400);
+      connG.selectAll("path")
+        .transition().duration(600).ease(d3.easeQuadInOut)
+        .attr("stroke-dashoffset",0);
+    }, dur + 120);
   } else {
-    // No animation: show both rows immediately
-    snapViewBox(0, vbY_both, W, vbH_both);
-    connG.attr("opacity",1).selectAll("path").attr("stroke-dashoffset",0);
+    connG.selectAll("path").attr("stroke-dashoffset",0);
   }
 }
 
-// ── Step 2: avg moves to top-third of viewport, min/max appear below ──
+// ── Step 2: min (top) · grey-avg (mid) · max (bottom) in H ────
 function drawStep2(animate) {
-  svgEl.setAttribute("width",  W);
-  svgEl.setAttribute("height", H);
+  snapViewBox();
+  computeGlobalScale();
+  var ease = d3.easeCubicInOut;
 
-  var fadeDur = animate ? 400 : 0;
-  var ease    = d3.easeCubicInOut;
-
-  // Fade out connectors + 2010 row
-  circlesG.selectAll(".conn-g")
+  // Remove connectors + 2010 row immediately
+  var fadeDur = animate ? 350 : 0;
+  svg.selectAll(".conn-layer")
     .transition().duration(fadeDur).attr("opacity",0)
     .on("end",function(){d3.select(this).remove();});
-  circlesG.selectAll(".plate-circ-2010,.kcal-2010")
-    .transition().duration(fadeDur).attr("opacity",0)
-    .on("end",function(){d3.select(this).remove();});
-  labelsG.selectAll(".reg-2010,.year-lbl-2010")
+  // Remove all step-1 elements except the 2023 avg circles which carry into step 2
+  svg.selectAll(".s1-elem:not(.s1-c23):not(.s1-k23)")
     .transition().duration(fadeDur).attr("opacity",0)
     .on("end",function(){d3.select(this).remove();});
 
-  // ── Layout arithmetic (all in world space, same WH) ───────────
-  var WH = worldH();
-
-  var allVals = DATA_2023_AVG.map(function(d){return d.kcal;});
+  // ── Layout: divide H into 5 bands ─────────────────────────────
+  // [topPad] [minCountryLbl] [minCircle] [gap] [avgCircle] [gap] [maxCircle] [maxCountryLbl] [regionLbl] [botPad]
+  // Scale everything to fit in H.
   var rngVals = [];
   SORTED_2023.forEach(function(d){
     var r = DATA_2023_RANGE[d.id];
     if (r) rngVals.push(r.min, r.max);
   });
-  var globalMin = d3.min(allVals.concat(rngVals));
-  var globalMax = d3.max(allVals.concat(rngVals));
+  var gMin = d3.min(rngVals.concat(DATA_2023_AVG.map(function(d){return d.kcal;}))); 
+  var gMax = d3.max(rngVals.concat(DATA_2023_AVG.map(function(d){return d.kcal;})));
 
-  var GAP  = 16;
-  var bigR = kcalToR(globalMax, globalMin, globalMax);    // biggest max circle
-  var bigA = kcalToR(d3.max(allVals), globalMin, globalMax); // biggest avg
-  var bigN = kcalToR(globalMin, globalMin, globalMax);    // smallest min
+  // ── Layout constants (unscaled) ──────────────────────────────
+  var lhPx   = 10;   // line height per label line (px)
+  var cLH    = 2 * lhPx;   // 20px — 2-line country label block height
+  var rLH    = 2 * lhPx;   // 20px — 2-line region label block height
+  var GAP    = 14;   // gap between adjacent circle edges
+  var cPad   = 12;   // gap between circle edge and its country label
+  var rPad   = 10;   // gap between max country label and region label
+  var topPad = 38;   // space at top: MIN badge (8px) + subtitle (10px) + spacing + min label starts
+  var botPad = 10;   // space at bottom below region labels
 
-  // Place avg row at top-third of world, leaving room above for min circles + labels
-  var topLabel   = 24;   // px for country label above min
-  var botLabel   = 24;   // px for country label below max
-  var regionLbl  = 16;   // px for region label below country label
+  // Biggest *actual* circle radius at each row (not theoretical min/max of scale)
+  var bigActMin = d3.max(rngVals, function(v){ return kcalToR(v, gMin, gMax); });
+  // bigActMin is actually the max of all range mins AND maxes by radius — use range-specific
+  var allMinVals = []; var allMaxVals = [];
+  SORTED_2023.forEach(function(d){
+    var r = DATA_2023_RANGE[d.id];
+    if (r){ allMinVals.push(r.min); allMaxVals.push(r.max); }
+  });
+  var bigRowMin = kcalToR(d3.max(allMinVals), gMin, gMax);  // biggest circle in min row
+  var bigRowMax = kcalToR(d3.max(allMaxVals), gMin, gMax);  // biggest circle in max row
+  var bigRowAvg = kcalToR(d3.max(DATA_2023_AVG, function(d){ return d.kcal; }), gMin, gMax);
 
-  var CY_AVG = topLabel + bigN*2 + GAP + bigA + 30;  // avg circle centre in world
-  var totalH = CY_AVG + bigA + GAP + bigR*2 + botLabel + regionLbl + 20;
-  // Scale: fit totalH into H with padding
-  var scl    = Math.min(1.0, (H - 40) / totalH);
-  var vbH    = totalH / scl;   // viewBox height to show everything
-  var vbY    = 0;              // start from top of world
+  var naturalH = topPad + cLH + cPad + bigRowMin*2 + GAP + bigRowAvg*2 + GAP + bigRowMax*2 + cPad + cLH + rPad + rLH + botPad;
+  var scale    = Math.min(1.0, (H - 4) / naturalH);
 
-  var S23 = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal-b.kcal;});
-  var pos23 = {}; S23.forEach(function(d,i){ pos23[d.id]=i; });
+  // Scale all dimensions together
+  var sGAP   = GAP    * scale;
+  var sCLH   = cLH    * scale;
+  var sRLH   = rLH    * scale;
+  var sCPad  = cPad   * scale;
+  var sRPad  = rPad   * scale;
+  var sTop   = topPad * scale;
+  var sBot   = botPad * scale;
+  var sLH    = lhPx   * scale;
+  var sBRowMin = bigRowMin * scale;   // half-height of min row (biggest min circle)
+  var sBRowAvg = bigRowAvg * scale;   // half-height of avg row
+  var sBRowMax = bigRowMax * scale;   // half-height of max row
 
-  // ── Move 2023 avg circles from their current position to CY_AVG ──
-  var existing = circlesG.selectAll(".plate-circ-2023");
+  // Scaled kcalToR — rescale maxR for step 2
+  var s2MaxR = maxR * scale;
+  var s2MinR = minR * scale;
+  function s2R(kcal) {
+    return s2MinR + (s2MaxR - s2MinR) * Math.sqrt((kcal - gMin) / (gMax - gMin));
+  }
 
-  if (existing.size() > 0) {
-    // They exist from step 1 — transition them up to CY_AVG and grey them
-    existing
-      .style("cursor","default").on("click",null).on("mouseover",null).on("mouseout",null)
-      .transition().duration(animate ? 700 : 0).ease(ease)
-      .attr("cy", CY_AVG)
-      .attr("fill","#C8CDD4").attr("stroke","rgba(150,155,160,0.4)")
-      .attr("opacity",0.45).style("pointer-events","none");
+  // ── Row centres ───────────────────────────────────────────────
+  // top-down: sTop → [min country label sCLH] → [sCPad] → min circle row → sGAP → avg row → sGAP → max row → [sCPad] → [max country label] → [sRPad] → [region label]
+  var minLblTop  = sTop;
+  var minLblBase = minLblTop + sCLH;             // bottom of min labels (= top of cPad gap above min circle)
+  var CY_MIN     = minLblBase + sCPad + sBRowMin;
+  var CY_AVG     = CY_MIN + sBRowMin + sGAP + sBRowAvg;
+  var CY_MAX     = CY_AVG + sBRowAvg + sGAP + sBRowMax;
+  var maxLblTop  = CY_MAX + sBRowMax + sCPad;
+  var rLblY      = maxLblTop + sCLH + sRPad;
 
-    circlesG.selectAll(".kcal-2023")
-      .transition().duration(animate ? 700 : 0).ease(ease)
-      .attr("y", CY_AVG).attr("fill","rgba(140,145,150,0.7)");
+  var S23    = DATA_2023_AVG.slice().sort(function(a,b){return a.kcal-b.kcal;});
+  var pos23  = {}; S23.forEach(function(d,i){pos23[d.id]=i;});
 
-    labelsG.selectAll(".reg-2023,.year-lbl-2023")
-      .transition().duration(animate ? 400 : 0).attr("opacity",0)
-      .on("end",function(){d3.select(this).remove();});
-  } else {
-    // Coming from step 0 or rebuild — create greyed avg row
+  // ── Move 2023 avg circles to CY_AVG and grey them ─────────────
+  var moveDur = animate ? 700 : 0;
+
+  // .s1-c23 circles are currently at Y23 = H*0.74
+  svg.selectAll(".s1-c23")
+    .style("cursor","default").on("click",null).on("mouseover",null).on("mouseout",null)
+    .transition().duration(moveDur).ease(ease)
+    .attr("cy",CY_AVG)
+    .attr("r",function(d){return d && d.kcal ? s2R(d.kcal) : s2R(3000);})
+    .attr("fill","#C8CDD4").attr("stroke","rgba(150,155,160,0.4)")
+    .attr("opacity",0.45).style("pointer-events","none");
+
+  svg.selectAll(".s1-k23")
+    .transition().duration(moveDur).ease(ease)
+    .attr("y",CY_AVG).attr("fill","rgba(140,145,150,0.7)");
+
+  // If no s1-c23 exist (entered from step 0), build greyed avg row
+  if (svg.selectAll(".s1-c23").size() === 0) {
     S23.forEach(function(d,i){
-      var r = kcalToR(d.kcal, globalMin, globalMax);
-      circlesG.append("circle").attr("class","plate-circ-2023")
+      var r = s2R(d.kcal);
+      circlesG.append("circle").attr("class","s1-c23 s1-elem")
         .attr("cx",cx(i)).attr("cy",CY_AVG).attr("r",r)
         .attr("fill","#C8CDD4").attr("stroke","rgba(150,155,160,0.4)").attr("stroke-width",1.5)
         .attr("opacity",0.45).style("pointer-events","none");
-      circlesG.append("text").attr("class","kcal-2023")
+      circlesG.append("text").attr("class","s1-k23 s1-elem")
         .attr("x",cx(i)).attr("y",CY_AVG)
         .attr("text-anchor","middle").attr("dominant-baseline","middle")
         .attr("font-family","'Source Sans 3',sans-serif").attr("font-weight","700")
-        .attr("pointer-events","none")
-        .attr("font-size",Math.max(7,r*0.26)+"px")
+        .attr("pointer-events","none").attr("font-size",Math.max(6,r*0.26)+"px")
         .attr("fill","rgba(140,145,150,0.7)").attr("opacity",1)
         .text(d3.format(",d")(d.kcal));
     });
   }
 
-  // Snap viewBox so avg row is visible while it transitions
-  if (animate) {
-    snapViewBox(0, vbY, W, vbH);
-  } else {
-    snapViewBox(0, vbY, W, vbH);
-  }
-
-  annotG.selectAll("*").remove();
-  annotG.append("text").attr("x",W-12).attr("y",22).attr("text-anchor","end")
-    .attr("font-family","'Libre Baskerville',serif")
-    .attr("font-size","1.4rem").attr("font-weight","700")
-    .attr("fill","var(--ink)").text("2023");
-  annotG.append("text").attr("x",W-12).attr("y",38).attr("text-anchor","end")
-    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.68rem")
-    .attr("fill","var(--grey-2)").text("kcal / capita / day · range within region");
-
-  // ── Build min/max after avg has settled ───────────────────────
-  var minMaxDelay = animate ? 750 : 0;
-
+  // ── Build min/max after avg settled ───────────────────────────
   function buildMinMax() {
     rangeG.selectAll("*").remove();
 
-    // Shared baselines
-    var colData = S23.map(function(d,i){
-      var rng  = DATA_2023_RANGE[d.id] || {min:d.kcal,max:d.kcal,minCountry:"",maxCountry:""};
-      var rAvg = kcalToR(d.kcal, globalMin, globalMax);
-      var rMin = kcalToR(rng.min, globalMin, globalMax);
-      var rMax = kcalToR(rng.max, globalMin, globalMax);
-      var minCY = CY_AVG - rAvg - GAP - rMin;
-      var maxCY = CY_AVG + rAvg + GAP + rMax;
-      return {d:d, i:i, rng:rng, rAvg:rAvg, rMin:rMin, rMax:rMax, minCY:minCY, maxCY:maxCY};
-    });
+    var dur2  = animate ? 450 : 0;
+    var lineH = sLH;   // use scaled line height
 
-    // All min country labels share top edge = top of highest min circle - 6
-    var topBase = d3.min(colData, function(c){ return c.minCY - c.rMin; }) - 6;
-    // All max country labels share same start y below the deepest max circle
-    var maxBot  = d3.max(colData, function(c){ return c.maxCY + c.rMax; });
-    var cLblY   = maxBot + 10;   // top of max country label block
-    var regLblY = cLblY + 22;   // region label y
+    S23.forEach(function(d,i){
+      var rng      = DATA_2023_RANGE[d.id] || {min:d.kcal,max:d.kcal,minCountry:"",maxCountry:""};
+      var rMin     = s2R(rng.min);
+      var rMax     = s2R(rng.max);
+      var x        = cx(i);
+      var myCY_MIN = CY_MIN;
+      var myCY_MAX = CY_MAX;
+      var delay    = animate ? i * 45 : 0;
 
-    var lineH = 10;
-    var dur2  = animate ? 500 : 0;
-
-    colData.forEach(function(c) {
-      var x     = cx(c.i);
-      var delay = animate ? c.i * 50 : 0;
-
-      // Dashed connector
-      rangeG.append("line")
-        .attr("x1",x).attr("x2",x)
-        .attr("y1", animate ? CY_AVG : c.minCY - c.rMin)
-        .attr("y2", animate ? CY_AVG : c.maxCY + c.rMax)
+      // Connector line
+      rangeG.append("line").attr("x1",x).attr("x2",x)
+        .attr("y1",animate?CY_AVG:myCY_MIN-rMin)
+        .attr("y2",animate?CY_AVG:myCY_MAX+rMax)
         .attr("stroke","#B8BEC6").attr("stroke-width",1)
         .attr("stroke-dasharray","3,3").attr("opacity",0.5)
         .transition().duration(dur2).delay(delay)
-        .attr("y1", c.minCY - c.rMin).attr("y2", c.maxCY + c.rMax);
+        .attr("y1",myCY_MIN-rMin).attr("y2",myCY_MAX+rMax);
 
       // MIN circle
-      rangeG.append("circle")
-        .attr("cx",x).attr("cy",c.minCY)
-        .attr("r", animate ? 0 : c.rMin)
-        .attr("fill",kcalColor(c.rng.min,globalMin,globalMax))
+      rangeG.append("circle").attr("cx",x).attr("cy",myCY_MIN)
+        .attr("r",animate?0:rMin)
+        .attr("fill",kcalColor(rng.min,gMin,gMax))
         .attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",1.2)
-        .attr("opacity", animate ? 0 : 1)
-        .style("cursor","pointer")
-        .on("mouseover",function(ev){showPlateTooltip(ev,c.rng.minCountry+" (min)",c.rng.min,"2023");})
+        .attr("opacity",animate?0:1).attr("class","s2-elem").style("cursor","pointer")
+        .on("mouseover",function(ev){showPlateTooltip(ev,rng.minCountry+" (min)",rng.min,"2023");})
         .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip)
-        .on("click",(function(_c){return function(ev){openVoronoi(_c.d.id,_c.rng.minCountry,_c.rng.min);};})(c))
-        .transition().duration(dur2).delay(delay).ease(ease)
-        .attr("r",c.rMin).attr("opacity",1);
+        .on("click",(function(_d,_r){return function(ev){openVoronoi(_d.id,_r.minCountry,_r.min);};})(d,rng))
+        .transition().duration(dur2).delay(delay).ease(ease).attr("r",rMin).attr("opacity",1);
 
-      rangeG.append("text")
-        .attr("x",x).attr("y",c.minCY)
+      rangeG.append("text").attr("x",x).attr("y",myCY_MIN)
         .attr("text-anchor","middle").attr("dominant-baseline","middle")
         .attr("font-family","'Source Sans 3',sans-serif")
-        .attr("font-size",Math.max(7,c.rMin*0.32)+"px").attr("font-weight","700")
-        .attr("fill",textColor(c.rng.min,globalMin,globalMax))
-        .attr("pointer-events","none")
-        .attr("opacity", animate ? 0 : 1)
-        .text(d3.format(",d")(c.rng.min))
-        .transition().duration(300).delay(delay+280).attr("opacity",1);
+        .attr("font-size",Math.max(6,rMin*0.30)+"px").attr("font-weight","700")
+        .attr("fill",textColor(rng.min,gMin,gMax)).attr("pointer-events","none")
+        .attr("opacity",animate?0:1).text(d3.format(",d")(rng.min))
+        .transition().duration(250).delay(delay+220).attr("opacity",1);
 
-      // MIN country label — bottom edge at topBase, growing upward
-      var minLines = wrapLabel(c.rng.minCountry||"", cellW-4);
+      // MIN country label — bottom-edge at minLblBase, lines grow upward
+      var minLines = wrapLabel13(rng.minCountry||"");
       minLines.forEach(function(line,li){
-        rangeG.append("text")
-          .attr("x",x)
-          .attr("y", topBase - (minLines.length-1-li)*lineH)
+        rangeG.append("text").attr("x",x)
+          .attr("y", minLblBase - (minLines.length-1-li)*lineH)
           .attr("text-anchor","middle")
           .attr("font-family","'Source Sans 3',sans-serif")
-          .attr("font-size","8px").attr("font-weight","600")
+          .attr("font-size",Math.max(6,lineH*0.85)+"px").attr("font-weight","600")
           .attr("fill","var(--grey-1)").attr("pointer-events","none")
-          .attr("opacity", animate ? 0 : 1)
-          .text(line)
-          .transition().duration(300).delay(delay+320).attr("opacity",1);
+          .attr("opacity",animate?0:1).text(line)
+          .transition().duration(250).delay(delay+250).attr("opacity",1);
       });
 
       // MAX circle
-      rangeG.append("circle")
-        .attr("cx",x).attr("cy",c.maxCY)
-        .attr("r", animate ? 0 : c.rMax)
-        .attr("fill",kcalColor(c.rng.max,globalMin,globalMax))
+      rangeG.append("circle").attr("cx",x).attr("cy",myCY_MAX)
+        .attr("r",animate?0:rMax)
+        .attr("fill",kcalColor(rng.max,gMin,gMax))
         .attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",1.2)
-        .attr("opacity", animate ? 0 : 1)
-        .style("cursor","pointer")
-        .on("mouseover",function(ev){showPlateTooltip(ev,c.rng.maxCountry+" (max)",c.rng.max,"2023");})
+        .attr("opacity",animate?0:1).attr("class","s2-elem").style("cursor","pointer")
+        .on("mouseover",function(ev){showPlateTooltip(ev,rng.maxCountry+" (max)",rng.max,"2023");})
         .on("mousemove",movePlateTooltip).on("mouseout",hidePlateTooltip)
-        .on("click",(function(_c){return function(ev){openVoronoi(_c.d.id,_c.rng.maxCountry,_c.rng.max);};})(c))
-        .transition().duration(dur2).delay(delay).ease(ease)
-        .attr("r",c.rMax).attr("opacity",1);
+        .on("click",(function(_d,_r){return function(ev){openVoronoi(_d.id,_r.maxCountry,_r.max);};})(d,rng))
+        .transition().duration(dur2).delay(delay).ease(ease).attr("r",rMax).attr("opacity",1);
 
-      rangeG.append("text")
-        .attr("x",x).attr("y",c.maxCY)
+      rangeG.append("text").attr("x",x).attr("y",myCY_MAX)
         .attr("text-anchor","middle").attr("dominant-baseline","middle")
         .attr("font-family","'Source Sans 3',sans-serif")
-        .attr("font-size",Math.max(7,c.rMax*0.22)+"px").attr("font-weight","700")
-        .attr("fill",textColor(c.rng.max,globalMin,globalMax))
-        .attr("pointer-events","none")
-        .attr("opacity", animate ? 0 : 1)
-        .text(d3.format(",d")(c.rng.max))
-        .transition().duration(300).delay(delay+350).attr("opacity",1);
+        .attr("font-size",Math.max(6,rMax*0.22)+"px").attr("font-weight","700")
+        .attr("fill",textColor(rng.max,gMin,gMax)).attr("pointer-events","none")
+        .attr("opacity",animate?0:1).text(d3.format(",d")(rng.max))
+        .transition().duration(250).delay(delay+280).attr("opacity",1);
 
-      // MAX country label — top-aligned at cLblY
-      var maxLines = wrapLabel(c.rng.maxCountry||"", cellW-4);
+      // MAX country label — top at maxLblTop
+      var maxLines = wrapLabel13(rng.maxCountry||"");
       maxLines.forEach(function(line,li){
-        rangeG.append("text")
-          .attr("x",x).attr("y", cLblY + li*lineH)
+        rangeG.append("text").attr("x",x)
+          .attr("y", maxLblTop + li*lineH)
           .attr("text-anchor","middle")
           .attr("font-family","'Source Sans 3',sans-serif")
-          .attr("font-size","8px").attr("font-weight","600")
+          .attr("font-size",Math.max(6,lineH*0.85)+"px").attr("font-weight","600")
           .attr("fill","var(--grey-1)").attr("pointer-events","none")
-          .attr("opacity", animate ? 0 : 1)
-          .text(line)
-          .transition().duration(300).delay(delay+380).attr("opacity",1);
+          .attr("opacity",animate?0:1).text(line)
+          .transition().duration(250).delay(delay+300).attr("opacity",1);
       });
 
-      // Region label
-      rangeG.append("text")
-        .attr("x",x).attr("y",regLblY)
-        .attr("text-anchor","middle")
-        .attr("font-family","'Source Sans 3',sans-serif")
-        .attr("font-size",Math.max(7,Math.min(9,cellW*0.11))+"px")
-        .attr("fill","var(--grey-2)").attr("pointer-events","none")
-        .attr("font-style","italic")
-        .attr("opacity", animate ? 0 : 1)
-        .text(c.d.label)
-        .transition().duration(300).delay(delay+420).attr("opacity",1);
+      // Region label — multi-line, top-aligned at rLblY
+      var regFs = Math.max(6, Math.min(9, cellW*0.10));
+      var regLh = regFs + 2;
+      wrapLabel13(d.label).forEach(function(line,li){
+        rangeG.append("text").attr("x",x).attr("y", rLblY + li*regLh)
+          .attr("text-anchor","middle")
+          .attr("font-family","'Source Sans 3',sans-serif").attr("font-size",regFs+"px")
+          .attr("fill","var(--grey-2)").attr("pointer-events","none").attr("font-style","italic")
+          .attr("opacity",animate?0:1).text(line)
+          .transition().duration(250).delay(delay+330).attr("opacity",1);
+      });
     });
 
-    // MIN / MAX annotations
-    annotG.selectAll(".step2-annot").remove();
-    annotG.append("text").attr("class","step2-annot")
-      .attr("x",6).attr("y",topBase-4)
-      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8px")
-      .attr("font-weight","700").attr("letter-spacing","0.18em")
+    // ── Annotations ───────────────────────────────────────────────
+    var regFs3 = Math.max(6, Math.min(9, cellW*0.10));
+    var regLh3 = regFs3 + 2;
+
+    // 2023 badge and subtitle sit in the topPad zone, above minLblTop
+    // topPad=38px gives: badge at y=14, subtitle at y=27, then 11px before min labels start
+    annotG.append("text").attr("x",W-10).attr("y", 14)
+      .attr("text-anchor","end")
+      .attr("font-family","'Libre Baskerville',serif").attr("font-size","1.1rem")
+      .attr("font-weight","700").attr("fill","var(--ink)").text("2023");
+    annotG.append("text").attr("x",W-10).attr("y", 27)
+      .attr("text-anchor","end")
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","0.58rem")
+      .attr("fill","var(--grey-2)").text("kcal / capita / day · range within region");
+
+    // MIN badge: left-aligned, same y as 2023 badge
+    annotG.append("text").attr("x",4).attr("y", 14)
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","7px")
+      .attr("font-weight","700").attr("letter-spacing","0.15em")
       .attr("fill","var(--grey-2)").text("MIN");
-    annotG.append("text").attr("class","step2-annot")
-      .attr("x",6).attr("y",regLblY)
-      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8px")
-      .attr("font-weight","700").attr("letter-spacing","0.18em")
+
+    // MAX badge: below the last region label row
+    annotG.append("text").attr("x",4).attr("y", rLblY + 2*regLh3 + 4)
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","7px")
+      .attr("font-weight","700").attr("letter-spacing","0.15em")
       .attr("fill","var(--grey-2)").text("MAX");
   }
 
-  if (animate) { setTimeout(buildMinMax, minMaxDelay); } else { buildMinMax(); }
+  if (animate) { setTimeout(buildMinMax, moveDur + 400); }
+  else         { buildMinMax(); }
 }
 
-// Helper: wrap label text into lines
+// Helper: wrap label to max 13 chars per line, breaking at spaces
+function wrapLabel13(str) {
+  var MAX = 13;
+  if (str.length <= MAX) return [str];
+  var words  = str.split(" ");
+  var lines  = [];
+  var cur    = "";
+  words.forEach(function(w) {
+    var test = cur ? cur + " " + w : w;
+    if (test.length <= MAX) {
+      cur = test;
+    } else {
+      if (cur) lines.push(cur);
+      // If word itself > MAX, just push it
+      cur = w;
+    }
+  });
+  if (cur) lines.push(cur);
+  return lines.length > 0 ? lines : [str];
+}
+
+// Helper: wrap label
 function wrapLabel(str, maxW) {
-  var charsPerLine = Math.max(8, Math.floor(maxW / 6.5));
-  if (str.length <= charsPerLine) return [str];
-  var commaIdx = str.indexOf(",");
-  if (commaIdx > 0 && commaIdx < str.length-1)
-    return [str.slice(0,commaIdx+1).trim(), str.slice(commaIdx+1).trim()];
+  var cpl = Math.max(8, Math.floor(maxW / 6.5));
+  if (str.length <= cpl) return [str];
+  var ci = str.indexOf(",");
+  if (ci > 0 && ci < str.length-1) return [str.slice(0,ci+1).trim(), str.slice(ci+1).trim()];
   var mid = Math.floor(str.length/2);
-  var spaceIdx = str.lastIndexOf(" ", mid+4);
-  if (spaceIdx > 0) return [str.slice(0,spaceIdx).trim(), str.slice(spaceIdx).trim()];
+  var si  = str.lastIndexOf(" ", mid+4);
+  if (si > 0) return [str.slice(0,si).trim(), str.slice(si).trim()];
   return [str];
 }
 
@@ -3652,23 +3685,37 @@ function makePlateFromRegion(regionId, kcal) {
   });
 }
 
-function openVoronoi(regionId, label, kcal) {
-  var overlay = document.getElementById("plate-voronoi-overlay");
-  var svgVor  = document.getElementById("plate-voronoi-svg");
+function renderVoronoiPlate(regionId, label, kcal, year) {
+  var svgVor = document.getElementById("plate-voronoi-svg");
   var legend  = document.getElementById("plate-voronoi-legend");
-  if (!overlay || !svgVor) return;
+  if (!svgVor) return;
 
   document.getElementById("plate-voronoi-country").textContent = label;
   document.getElementById("plate-voronoi-kcal").textContent =
-    d3.format(",d")(kcal) + " kcal / capita / day";
+    year + " · " + d3.format(",d")(kcal) + " kcal / capita / day";
+
+  // Year buttons active state
+  document.getElementById("pv-btn-2010").classList.toggle("active", year === "2010");
+  document.getElementById("pv-btn-2023").classList.toggle("active", year === "2023");
+
+  // Delta badge
+  var d2010 = DATA_2010_AVG.find(function(x){ return x.id === regionId; });
+  var d2023 = DATA_2023_AVG.find(function(x){ return x.id === regionId; });
+  var deltaEl = document.getElementById("pv-delta");
+  if (d2010 && d2023 && deltaEl) {
+    var pct = Math.round((d2023.kcal - d2010.kcal) / d2010.kcal * 100);
+    var sign = pct >= 0 ? "+" : "";
+    deltaEl.textContent = sign + pct + "% from 2010 to 2023";
+    deltaEl.className = "plate-year-delta " + (pct > 0 ? "pos" : pct < 0 ? "neg" : "neu");
+  }
 
   var plate = makePlateFromRegion(regionId, kcal);
   if (!plate) return;
 
   var SIZE = Math.min(420, window.innerWidth * 0.45 - 40);
-  svgVor.setAttribute("width",SIZE);
-  svgVor.setAttribute("height",SIZE);
-  svgVor.setAttribute("viewBox","0 0 "+SIZE+" "+SIZE);
+  svgVor.setAttribute("width", SIZE);
+  svgVor.setAttribute("height", SIZE);
+  svgVor.setAttribute("viewBox", "0 0 " + SIZE + " " + SIZE);
 
   var vSvg = d3.select("#plate-voronoi-svg");
   vSvg.selectAll("*").remove();
@@ -3679,48 +3726,49 @@ function openVoronoi(regionId, label, kcal) {
 
   var g = vSvg.append("g").attr("clip-path","url(#pv-clip2)");
 
-  var items=[];
+  var items = [];
   plate.forEach(function(grp){
     grp.items.forEach(function(it){
-      items.push({name:it.name,group:grp.group,color:grp.color,share:it.share,kcal:it.kcal});
+      items.push({name:it.name, group:grp.group, color:grp.color, share:it.share, kcal:it.kcal});
     });
   });
 
-  function seededRng(seed){return function(){seed^=seed<<13;seed^=seed>>17;seed^=seed<<5;return(seed>>>0)/0xFFFFFFFF;};}
-  var rng=seededRng(42);
-  var cx2=SIZE/2,cy2=SIZE/2,rad=SIZE/2-2;
-  var cum=[];var cs=0;
-  items.forEach(function(it){cs+=it.share;cum.push(cs);});
+  function seededRng(seed){ return function(){ seed^=seed<<13; seed^=seed>>17; seed^=seed<<5; return (seed>>>0)/0xFFFFFFFF; }; }
+  var rng = seededRng(42);
+  var cx2 = SIZE/2, cy2 = SIZE/2, rad = SIZE/2-2;
+  var cum = []; var cs = 0;
+  items.forEach(function(it){ cs += it.share; cum.push(cs); });
 
-  var pts=[];var att=0;
-  while(pts.length<500&&att<30000){
+  var pts = []; var att = 0;
+  while (pts.length < 500 && att < 30000) {
     att++;
-    var u=rng()*2*Math.PI,r2=rad*Math.sqrt(rng());
-    var px=cx2+r2*Math.cos(u),py=cy2+r2*Math.sin(u);
-    var rv=rng(),idx=0;
-    for(var ii=0;ii<cum.length;ii++){if(rv<=cum[ii]){idx=ii;break;}}
-    pts.push({x:px,y:py,item:items[idx]});
+    var u = rng()*2*Math.PI, r2 = rad*Math.sqrt(rng());
+    var px = cx2+r2*Math.cos(u), py = cy2+r2*Math.sin(u);
+    var rv = rng(), idx = 0;
+    for (var ii = 0; ii < cum.length; ii++) { if (rv <= cum[ii]) { idx = ii; break; } }
+    pts.push({x:px, y:py, item:items[idx]});
   }
 
-  var vor2=d3.Delaunay.from(pts,function(p){return p.x;},function(p){return p.y;}).voronoi([0,0,SIZE,SIZE]);
+  var vor2 = d3.Delaunay.from(pts, function(p){ return p.x; }, function(p){ return p.y; })
+    .voronoi([0,0,SIZE,SIZE]);
   pts.forEach(function(p,i){
-    g.append("path").attr("d",vor2.renderCell(i))
-      .attr("fill",p.item.color).attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",0.5)
-      .on("mouseover",function(event){
-        var tip=document.getElementById("plate-voronoi-tooltip");
-        if(tip){tip.innerHTML="<strong>"+p.item.name+"</strong><br>"+p.item.group+"<br>"+Math.round(p.item.share*100)+"% · "+p.item.kcal+" kcal/day";tip.style.opacity=1;tip.style.left=(event.clientX+12)+"px";tip.style.top=(event.clientY-10)+"px";}
+    g.append("path").attr("d", vor2.renderCell(i))
+      .attr("fill", p.item.color).attr("stroke","rgba(255,255,255,0.5)").attr("stroke-width",0.5)
+      .on("mouseover", function(event){
+        var tip = document.getElementById("plate-voronoi-tooltip");
+        if (tip) { tip.innerHTML = "<strong>"+p.item.name+"</strong><br>"+p.item.group+"<br>"+Math.round(p.item.share*100)+"% · "+p.item.kcal+" kcal/day"; tip.style.opacity = 1; tip.style.left = (event.clientX+12)+"px"; tip.style.top = (event.clientY-10)+"px"; }
       })
-      .on("mousemove",function(event){var tip=document.getElementById("plate-voronoi-tooltip");if(tip){tip.style.left=(event.clientX+12)+"px";tip.style.top=(event.clientY-10)+"px";}})
-      .on("mouseout",function(){var tip=document.getElementById("plate-voronoi-tooltip");if(tip)tip.style.opacity=0;});
+      .on("mousemove", function(event){ var tip = document.getElementById("plate-voronoi-tooltip"); if (tip){ tip.style.left=(event.clientX+12)+"px"; tip.style.top=(event.clientY-10)+"px"; }})
+      .on("mouseout", function(){ var tip = document.getElementById("plate-voronoi-tooltip"); if (tip) tip.style.opacity = 0; });
   });
 
-  var gc={};var gct={};
-  pts.forEach(function(p){var k=p.item.group;if(!gc[k]){gc[k]={x:0,y:0,color:p.item.color};gct[k]=0;}gc[k].x+=p.x;gc[k].y+=p.y;gct[k]++;});
+  var gc = {}, gct = {};
+  pts.forEach(function(p){ var k = p.item.group; if (!gc[k]){ gc[k]={x:0,y:0,color:p.item.color}; gct[k]=0; } gc[k].x+=p.x; gc[k].y+=p.y; gct[k]++; });
   Object.keys(gc).forEach(function(k){
-    var ex=gc[k].x/gct[k],ey=gc[k].y/gct[k];
-    var d2=Math.sqrt((ex-cx2)*(ex-cx2)+(ey-cy2)*(ey-cy2));
-    if(d2<rad*0.88){
-      var s=plate.find(function(gr){return gr.group===k;});
+    var ex = gc[k].x/gct[k], ey = gc[k].y/gct[k];
+    var d2 = Math.sqrt((ex-cx2)*(ex-cx2)+(ey-cy2)*(ey-cy2));
+    if (d2 < rad*0.88) {
+      var s = plate.find(function(gr){ return gr.group === k; });
       g.append("text").attr("x",ex).attr("y",ey).attr("text-anchor","middle").attr("dominant-baseline","middle")
         .attr("fill","rgba(255,255,255,0.9)").attr("font-size",Math.max(8,Math.min(11,600*(s?s.share:0.1)*SIZE/420))+"px")
         .attr("font-weight","700").attr("font-family","'Source Sans 3',sans-serif").attr("pointer-events","none")
@@ -3728,27 +3776,59 @@ function openVoronoi(regionId, label, kcal) {
     }
   });
 
-  legend.innerHTML="";
+  legend.innerHTML = "";
   plate.forEach(function(grp){
-    var div=document.createElement("div");div.className="plate-vleg-group";
-    var tDiv=document.createElement("div");tDiv.className="plate-vleg-group-title";
-    var sw=document.createElement("span");sw.className="plate-vleg-swatch";sw.style.background=grp.color;
-    tDiv.appendChild(sw);tDiv.appendChild(document.createTextNode(grp.group));
+    var div = document.createElement("div"); div.className = "plate-vleg-group";
+    var tDiv = document.createElement("div"); tDiv.className = "plate-vleg-group-title";
+    var sw = document.createElement("span"); sw.className = "plate-vleg-swatch"; sw.style.background = grp.color;
+    tDiv.appendChild(sw); tDiv.appendChild(document.createTextNode(grp.group));
     div.appendChild(tDiv);
     grp.items.forEach(function(it){
-      var row=document.createElement("div");row.className="plate-vleg-item";
-      var ns=document.createElement("span");ns.textContent=it.name;
-      var ps=document.createElement("span");ps.className="plate-vleg-item-pct";ps.textContent=Math.round(it.share*100)+"%";
-      row.appendChild(ns);row.appendChild(ps);div.appendChild(row);
+      var row = document.createElement("div"); row.className = "plate-vleg-item";
+      var ns = document.createElement("span"); ns.textContent = it.name;
+      var ps = document.createElement("span"); ps.className = "plate-vleg-item-pct"; ps.textContent = Math.round(it.share*100)+"%";
+      row.appendChild(ns); row.appendChild(ps); div.appendChild(row);
     });
     legend.appendChild(div);
   });
-
-  overlay.classList.add("active");
 }
 
-document.getElementById("plate-voronoi-close").addEventListener("click",function(){document.getElementById("plate-voronoi-overlay").classList.remove("active");});
-document.getElementById("plate-voronoi-overlay").addEventListener("click",function(e){if(e.target===this)this.classList.remove("active");});
+// State for currently open popup
+var _pvRegionId = null, _pvLabel = null, _pvYear = "2023";
+
+function openVoronoi(regionId, label, kcal) {
+  _pvRegionId = regionId;
+  _pvLabel = label;
+  // Determine year from the kcal value passed
+  var d23 = DATA_2023_AVG.find(function(x){ return x.id === regionId; });
+  var d10 = DATA_2010_AVG.find(function(x){ return x.id === regionId; });
+  // Match kcal to decide which year is showing initially
+  if (d10 && Math.abs(kcal - d10.kcal) < Math.abs(kcal - (d23 ? d23.kcal : 9999))) {
+    _pvYear = "2010";
+  } else {
+    _pvYear = "2023";
+  }
+  var showKcal = _pvYear === "2010" ? (d10 ? d10.kcal : kcal) : (d23 ? d23.kcal : kcal);
+  renderVoronoiPlate(regionId, label, showKcal, _pvYear);
+  document.getElementById("plate-voronoi-overlay").classList.add("active");
+}
+
+// Wire up year-flip buttons
+document.getElementById("pv-btn-2010").addEventListener("click", function(){
+  if (!_pvRegionId) return;
+  _pvYear = "2010";
+  var d10 = DATA_2010_AVG.find(function(x){ return x.id === _pvRegionId; });
+  if (d10) renderVoronoiPlate(_pvRegionId, _pvLabel, d10.kcal, "2010");
+});
+document.getElementById("pv-btn-2023").addEventListener("click", function(){
+  if (!_pvRegionId) return;
+  _pvYear = "2023";
+  var d23 = DATA_2023_AVG.find(function(x){ return x.id === _pvRegionId; });
+  if (d23) renderVoronoiPlate(_pvRegionId, _pvLabel, d23.kcal, "2023");
+});
+
+document.getElementById("plate-voronoi-close").addEventListener("click", function(){ document.getElementById("plate-voronoi-overlay").classList.remove("active"); });
+document.getElementById("plate-voronoi-overlay").addEventListener("click", function(e){ if (e.target === this) this.classList.remove("active"); });
 
 })();
 
