@@ -1603,7 +1603,16 @@ window.addEventListener("scroll", ()=>{
   const spineX=W/2, ROW_H=64;
   const H=events.length*ROW_H+MARGIN.top+MARGIN.bottom;
 
-  const timeScale=d3.scaleLinear().domain([d3.min(events,e=>e.year),d3.max(events,e=>e.year)+10]).range([MARGIN.top,H-MARGIN.bottom]);
+  // Equal spacing: each event gets its own row, independent of year
+  var sortedEvents=events.slice().sort(function(a,b){return a.year-b.year;});
+  function timeScale(year){
+    var idx=sortedEvents.findIndex(function(e){return e.year===year;});
+    if(idx<0)idx=0;
+    return MARGIN.top+idx*(H-MARGIN.top-MARGIN.bottom)/(sortedEvents.length-1||1);
+  }
+  // Also need a version that takes an arbitrary year for era bands/tick marks
+  var yearMin=d3.min(events,function(e){return e.year;}), yearMax=d3.max(events,function(e){return e.year;});
+  var timeScaleYear=d3.scaleLinear().domain([yearMin,yearMax]).range([MARGIN.top,H-MARGIN.bottom]);
   const yieldScale=d3.scaleLinear().domain([0,5]).range([0,152]);
   const thickScale=d3.scaleLinear().domain([0,5]).range([2,20]);
 
@@ -1619,7 +1628,7 @@ window.addEventListener("scroll", ()=>{
 
   // era bands
   [{y1:-9000,y2:0,fill:"#FAFBFC"},{y1:0,y2:1900,fill:"#F8F9FB"},{y1:1900,y2:1970,fill:"#F5F7FA"},{y1:1970,y2:2030,fill:"#F2F5F9"}].forEach(era=>{
-    const yt=timeScale(era.y1), yb=timeScale(era.y2);
+    const yt=timeScaleYear(era.y1), yb=timeScaleYear(era.y2);
     svg.append("rect").attr("x",0).attr("y",yt).attr("width",W).attr("height",yb-yt).attr("fill",era.fill);
   });
 
@@ -1636,7 +1645,7 @@ window.addEventListener("scroll", ()=>{
 
   // tick years
   [-8000,-4000,-2000,0,500,1000,1500,1700,1800,1850,1900,1950,2000,2020].forEach(y=>{
-    const ty=timeScale(y);
+    const ty=timeScaleYear(y);
     svg.append("line").attr("x1",spineX-5).attr("y1",ty).attr("x2",spineX+5).attr("y2",ty).attr("stroke","#C9CDD1").attr("stroke-width",1);
     svg.append("text").attr("x",spineX).attr("y",ty).attr("text-anchor","middle").attr("dominant-baseline","middle")
       .attr("fill","#C9CDD1").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","7px")
