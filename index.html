@@ -216,8 +216,8 @@ body {
 }
 
 
-/* ══ CH1 DONUT / RADIAL ══ */
-.ch1-vis { max-width:900px; margin:0 auto; padding:1.5rem 0 0; }
+/* ══ CH1 SANKEY ══ */
+.ch1-vis { max-width:960px; margin:0 auto; padding:1.5rem 0 0; }
 #ch1-svg { display:block; width:100%; overflow:visible; }
 .ch1-legend {
   display:flex; flex-wrap:wrap; justify-content:center;
@@ -860,7 +860,7 @@ input[type="range"]::-moz-range-thumb{width:15px;height:15px;border-radius:50%;b
   </div>
   <div class="chapter-body">
     <div class="ch1-vis">
-      <svg id="ch1-svg" viewBox="0 0 820 660"></svg>
+      <svg id="ch1-svg" viewBox="0 0 900 520"></svg>
     </div>
     <div class="ch1-legend" id="ch1-legend"></div>
     <div class="stat-row">
@@ -1426,148 +1426,245 @@ window.addEventListener("scroll", ()=>{
 }, {passive:true});
 
 // ══════════════════════════════════════════════════
-// CHAPTER 1 — RADIAL FLOW DIAGRAM
+// CHAPTER 1 — SANKEY FLOW DIAGRAM
 // ══════════════════════════════════════════════════
 (function(){
-  const W=820, H=660, CX=820/2, CY=660/2+15;
-  const INNER_R=78, CROP_R=138, GAP_R=155, FLOW_R=235, BLEED_R=308;
-  const G_PAD=0.014;
+  var W=900, H=520;
+  var MT=40, MB=50, ML=170, MR=50;
+  var NODE_W=18, NODE_PAD=8;
+  var MID_X = W/2;  // control point x for bezier curves
 
-  const crops=[
-    {id:"maize",label:"Maize",share:0.28,color:"#0D5EA6"},
-    {id:"wheat",label:"Wheat",share:0.22,color:"#002960"},
-    {id:"rice",label:"Rice",share:0.16,color:"#307FBF"},
-    {id:"soy",label:"Soybean",share:0.10,color:"#7EC8E3"},
-    {id:"sugar",label:"Sugar crops",share:0.08,color:"#5A9BC0"},
-    {id:"roots",label:"Roots & tubers",share:0.07,color:"#1A4A80"},
-    {id:"other",label:"Other crops",share:0.09,color:"#8BAFC8"},
+  // Left nodes: crop types (share of global calorie production)
+  var crops=[
+    {id:"maize", label:"Maize",          share:0.28, color:"#0D5EA6"},
+    {id:"wheat", label:"Wheat",          share:0.22, color:"#002960"},
+    {id:"rice",  label:"Rice",           share:0.16, color:"#307FBF"},
+    {id:"soy",   label:"Soybean",        share:0.10, color:"#5A9BC0"},
+    {id:"sugar", label:"Sugar crops",    share:0.08, color:"#1A4A80"},
+    {id:"roots", label:"Roots & tubers", share:0.07, color:"#7EC8E3"},
+    {id:"other", label:"Other crops",    share:0.09, color:"#8BAFC8"},
   ];
-  const flows=[
-    {id:"food",  label:"Direct food",        share:0.455,color:"#002960",desc:"Calories eaten directly by humans"},
-    {id:"feed",  label:"Animal feed",         share:0.310,color:"#0D5EA6",desc:"Fed to livestock — returns ~15% as meat/dairy"},
-    {id:"waste", label:"Loss & waste",        share:0.300,color:"#C01B2D",desc:"Lost or wasted — gone from the food system entirely",bleed:true},
-    {id:"fuel",  label:"Biofuel & industry",  share:0.085,color:"#307FBF",desc:"Converted to ethanol, biodiesel, or industrial starch"},
-    {id:"seed",  label:"Seed & other",        share:0.050,color:"#7EC8E3",desc:"Retained as seed stock or non-food industrial use"},
+
+  // Right nodes: end use categories
+  // share values are fractions of total production
+  var uses=[
+    {id:"food",  label:"Direct food",       share:0.455, color:"#002960", desc:"Calories consumed directly by people as food"},
+    {id:"feed",  label:"Animal feed",        share:0.310, color:"#0D5EA6", desc:"Fed to livestock — returns only ~15% as meat & dairy calories"},
+    {id:"waste", label:"Loss & waste",       share:0.140, color:"#E8547A", desc:"Lost post-harvest, in transit, at retail and in homes", bleed:true},
+    {id:"fuel",  label:"Biofuel & industry", share:0.060, color:"#307FBF", desc:"Converted to ethanol, biodiesel or industrial starch"},
+    {id:"seed",  label:"Seed & other",       share:0.035, color:"#7EC8E3", desc:"Retained as seed stock or non-food industrial use"},
   ];
-  const totalF = flows.reduce((s,f)=>s+f.share,0);
-  flows.forEach(f=>f.norm=f.share/totalF);
 
-  const svg = d3.select("#ch1-svg");
-  const defs = svg.append("defs");
-  const gf = defs.append("filter").attr("id","ch1-glow");
-  gf.append("feGaussianBlur").attr("stdDeviation","3").attr("result","blur");
-  const gm=gf.append("feMerge"); gm.append("feMergeNode").attr("in","blur"); gm.append("feMergeNode").attr("in","SourceGraphic");
-  const wf = defs.append("filter").attr("id","ch1-wglow");
-  wf.append("feGaussianBlur").attr("stdDeviation","7").attr("result","blur");
-  const wm=wf.append("feMerge"); wm.append("feMergeNode").attr("in","blur"); wm.append("feMergeNode").attr("in","SourceGraphic");
+  // Each crop splits to end uses proportionally (assumption: uniform distribution)
+  // This generates flow links: {source: cropIdx, target: useIdx, value}
+  var totalCrop = crops.reduce(function(s,c){return s+c.share;},0);
+  var totalUse  = uses.reduce(function(s,u){return s+u.share;},0);
+  crops.forEach(function(c){c.norm=c.share/totalCrop;});
+  uses.forEach(function(u){u.norm=u.share/totalUse;});
 
-  const bg = svg.append("g").attr("transform",`translate(${CX},${CY})`);
-  [INNER_R,CROP_R,GAP_R,FLOW_R].forEach(r=>{
-    bg.append("circle").attr("r",r).attr("fill","none").attr("stroke","#E8EAEC").attr("stroke-width","0.7");
-  });
-  for(let i=0;i<24;i++){
-    const a=(i/24)*Math.PI*2;
-    bg.append("line")
-      .attr("x1",Math.cos(a)*INNER_R).attr("y1",Math.sin(a)*INNER_R)
-      .attr("x2",Math.cos(a)*(FLOW_R+20)).attr("y2",Math.sin(a)*(FLOW_R+20))
-      .attr("stroke","#F0F2F4").attr("stroke-width","0.5");
-  }
-
-  // crop arcs
-  const arcGen = d3.arc().innerRadius(INNER_R).outerRadius(CROP_R);
-  const pieGen = d3.pie().value(d=>d.share).padAngle(G_PAD).sort(null);
-  const cropArcs = pieGen(crops);
-  const cg = svg.append("g").attr("transform",`translate(${CX},${CY})`);
-  cropArcs.forEach((d,i)=>{
-    const c=crops[i];
-    cg.append("path").attr("d",arcGen(d)).attr("fill",c.color).attr("opacity",0.82)
-      .attr("filter","url(#ch1-glow)").style("cursor","pointer")
-      .on("mouseover",function(e){ d3.select(this).attr("opacity",1); showTip(e,c.label,`${Math.round(c.share*100)}% of global calorie production`); })
-      .on("mousemove",moveTip).on("mouseout",function(){ d3.select(this).attr("opacity",0.82); hideTip(); });
-    const mid=(d.startAngle+d.endAngle)/2;
-    const lx=Math.cos(mid-Math.PI/2)*(CROP_R+14), ly=Math.sin(mid-Math.PI/2)*(CROP_R+14);
-    if(c.share>0.07){
-      cg.append("text").attr("x",lx).attr("y",ly)
-        .attr("text-anchor",lx>5?"start":lx<-5?"end":"middle")
-        .attr("dominant-baseline","middle")
-        .attr("fill",c.color).attr("font-family","'Source Sans 3',sans-serif")
-        .attr("font-size","10px").attr("opacity",0.85).text(c.label);
-    }
-  });
-
-  // connectors
-  const connG = svg.append("g").attr("transform",`translate(${CX},${CY})`);
-  const flowPie = d3.pie().value(d=>d.norm).padAngle(G_PAD).sort(null);
-  const flowArcs = flowPie(flows);
-  cropArcs.forEach((ca,ci)=>{
-    flowArcs.forEach((fa,fi)=>{
-      const cm=(ca.startAngle+ca.endAngle)/2-Math.PI/2;
-      const fm=(fa.startAngle+fa.endAngle)/2-Math.PI/2;
-      connG.append("path")
-        .attr("d",`M${Math.cos(cm)*(CROP_R-4)},${Math.sin(cm)*(CROP_R-4)} Q0,0 ${Math.cos(fm)*GAP_R},${Math.sin(fm)*GAP_R}`)
-        .attr("fill","none").attr("stroke",flows[fi].color)
-        .attr("stroke-width",Math.max(0.3,crops[ci].share*flows[fi].norm*11))
-        .attr("opacity",0.07);
+  var links=[];
+  crops.forEach(function(c,ci){
+    uses.forEach(function(u,ui){
+      links.push({ci:ci, ui:ui, value: c.norm * u.norm});
     });
   });
 
-  // flow arcs
-  const flowG = svg.append("g").attr("transform",`translate(${CX},${CY})`);
-  const flowArcGen  = d3.arc().innerRadius(GAP_R).outerRadius(FLOW_R).padAngle(G_PAD);
-  const bleedArcGen = d3.arc().innerRadius(GAP_R).outerRadius(BLEED_R).padAngle(G_PAD);
-  const rg = defs.append("radialGradient").attr("id","waste-rg").attr("cx","50%").attr("cy","50%").attr("r","50%")
-    .attr("gradientUnits","userSpaceOnUse").attr("cx",CX).attr("cy",CY).attr("r",BLEED_R);
-  rg.append("stop").attr("offset","0%").attr("stop-color","#C01B2D").attr("stop-opacity","0.9");
-  rg.append("stop").attr("offset","100%").attr("stop-color","#C01B2D").attr("stop-opacity","0.15");
+  // ── Layout: compute y positions for each node ──
+  var drawH = H - MT - MB;
+  var leftX  = ML;
+  var rightX = W - MR - NODE_W;
 
-  flowArcs.forEach((d,i)=>{
-    const f=flows[i];
-    const isWaste=!!f.bleed;
-    const gen=isWaste?bleedArcGen:flowArcGen;
-    const path=flowG.append("path").attr("d",gen(d))
-      .attr("fill",isWaste?"url(#waste-rg)":f.color)
-      .attr("opacity",isWaste?0.7:0.78)
-      .attr("filter",isWaste?"url(#ch1-wglow)":"url(#ch1-glow)")
-      .style("cursor","pointer");
-    if(isWaste){
-      for(let p=0;p<20;p++){
-        const a=d.startAngle+(d.endAngle-d.startAngle)*(p/19)-Math.PI/2;
-        const r=BLEED_R+Math.random()*55;
-        flowG.append("circle")
-          .attr("cx",Math.cos(a+(Math.random()-0.5)*0.15)*r)
-          .attr("cy",Math.sin(a+(Math.random()-0.5)*0.15)*r)
-          .attr("r",Math.random()*5+1.5).attr("fill","#C01B2D")
-          .attr("opacity",Math.random()*0.3+0.04);
-      }
-    }
-    path.on("mouseover",function(e){ d3.select(this).attr("opacity",1); showTip(e,f.label,`${Math.round(f.share*100)}% of production — ${f.desc}`); })
-        .on("mousemove",moveTip).on("mouseout",function(){ d3.select(this).attr("opacity",isWaste?0.7:0.78); hideTip(); });
-    const mid=(d.startAngle+d.endAngle)/2;
-    const lr=isWaste?BLEED_R+18:FLOW_R+14;
-    const lx=Math.cos(mid-Math.PI/2)*lr, ly=Math.sin(mid-Math.PI/2)*lr;
-    const anchor=lx>8?"start":lx<-8?"end":"middle";
-    flowG.append("text").attr("x",lx).attr("y",ly-3).attr("text-anchor",anchor)
-      .attr("fill",f.color).attr("font-family","'Libre Baskerville',serif")
-      .attr("font-size",isWaste?"12px":"11px").attr("font-weight",isWaste?"700":"400")
-      .text(f.label);
-    flowG.append("text").attr("x",lx).attr("y",ly+10).attr("text-anchor",anchor)
-      .attr("fill",f.color).attr("opacity",0.65).attr("font-family","'Source Sans 3',sans-serif")
-      .attr("font-size","9.5px").text(`${Math.round(f.share*100)}%`);
+  // Crop nodes: stacked with padding
+  var cropTotal = crops.reduce(function(s,c){return s+c.share;},0);
+  var cropPadTotal = NODE_PAD*(crops.length-1);
+  var cropDrawH = drawH - cropPadTotal;
+  var cy=MT;
+  crops.forEach(function(c){
+    c.h = (c.share/cropTotal)*cropDrawH;
+    c.y0=cy; c.y1=cy+c.h; cy+=c.h+NODE_PAD;
+    c.outOffset=0; // tracking filled height for link stacking
   });
 
-  // centre
-  const cenG=svg.append("g").attr("transform",`translate(${CX},${CY})`);
-  cenG.append("circle").attr("r",INNER_R-2).attr("fill","white").attr("stroke","#E8EAEC").attr("stroke-width","1");
-  cenG.append("text").attr("y",-20).attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px").attr("fill","var(--grey-2)").attr("letter-spacing","0.15em").text("GLOBAL CALORIES");
-  cenG.append("text").attr("y",6).attr("text-anchor","middle").attr("font-family","'Libre Baskerville',serif").attr("font-size","28px").attr("font-weight","700").attr("fill","var(--blue-1)").text("9,800");
-  cenG.append("text").attr("y",22).attr("text-anchor","middle").attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px").attr("fill","var(--grey-2)").text("trillion kcal / year");
-  cenG.append("text").attr("y",44).attr("text-anchor","middle").attr("font-family","'Libre Baskerville',serif").attr("font-style","italic").attr("font-size","10px").attr("fill","var(--blue-2)").text("enough for everyone");
+  // Use nodes
+  var useTotal = uses.reduce(function(s,u){return s+u.share;},0);
+  var usePadTotal = NODE_PAD*(uses.length-1);
+  var useDrawH = drawH - usePadTotal;
+  var uy=MT;
+  uses.forEach(function(u){
+    u.h = (u.share/useTotal)*useDrawH;
+    u.y0=uy; u.y1=uy+u.h; uy+=u.h+NODE_PAD;
+    u.inOffset=0;
+  });
 
-  // legend
-  const legEl=document.getElementById("ch1-legend");
-  [...crops.map(c=>({label:c.label,color:c.color})),...flows.map(f=>({label:f.label,color:f.color}))].forEach(item=>{
-    const div=document.createElement("div"); div.className="ch1-leg-item";
-    div.innerHTML=`<div class="ch1-leg-dot" style="background:${item.color}"></div><span>${item.label}</span>`;
+  // Assign link y-positions within each node band
+  // Sort links so they flow in the same order on both sides
+  links.forEach(function(lk){
+    var c=crops[lk.ci], u=uses[lk.ui];
+    lk.srcH = lk.value * cropDrawH;  // height at source node
+    lk.tgtH = lk.value * useDrawH;   // height at target node
+    lk.sy0 = c.y0 + c.outOffset;
+    lk.sy1 = lk.sy0 + lk.srcH;
+    c.outOffset += lk.srcH;
+    lk.ty0 = u.y0 + u.inOffset;
+    lk.ty1 = lk.ty0 + lk.tgtH;
+    u.inOffset += lk.tgtH;
+  });
+
+  // ── SVG ──
+  var svg = d3.select("#ch1-svg");
+  var defs = svg.append("defs");
+
+  // Subtle grid lines
+  for(var gyi=0; gyi<6; gyi++){
+    var gy = MT + gyi*(drawH/5);
+    svg.append("line").attr("x1",leftX).attr("y1",gy).attr("x2",rightX+NODE_W).attr("y2",gy)
+      .attr("stroke","#F0F2F4").attr("stroke-width","0.5");
+  }
+
+  // Waste bleed gradient — horizontal, fading right off page
+  var wasteGrad = defs.append("linearGradient").attr("id","ch1-waste-bleed")
+    .attr("x1","0%").attr("y1","0%").attr("x2","100%").attr("y2","0%");
+  wasteGrad.append("stop").attr("offset","0%").attr("stop-color","#E8547A").attr("stop-opacity","0.85");
+  wasteGrad.append("stop").attr("offset","55%").attr("stop-color","#E8547A").attr("stop-opacity","0.45");
+  wasteGrad.append("stop").attr("offset","100%").attr("stop-color","#E8547A").attr("stop-opacity","0.0");
+
+  // Soft glow filter for waste
+  var wf = defs.append("filter").attr("id","ch1-waste-glow").attr("x","-20%").attr("y","-20%").attr("width","150%").attr("height","150%");
+  wf.append("feGaussianBlur").attr("stdDeviation","4").attr("result","blur");
+  var wm = wf.append("feMerge"); wm.append("feMergeNode").attr("in","blur"); wm.append("feMergeNode").attr("in","SourceGraphic");
+
+  // ── Draw links ──
+  var linkG = svg.append("g").attr("class","ch1-links");
+  links.forEach(function(lk){
+    var c=crops[lk.ci], u=uses[lk.ui];
+    var isWaste = uses[lk.ui].id==="waste";
+    var col = isWaste ? "#E8547A" : c.color;
+    var x0=leftX+NODE_W, x1=rightX;
+    var cpx = (x0+x1)/2;
+    // Cubic bezier path for the flow band (top + bottom edges)
+    var path = "M"+x0+","+lk.sy0
+      +" C"+cpx+","+lk.sy0+" "+cpx+","+lk.ty0+" "+x1+","+lk.ty0
+      +" L"+x1+","+lk.ty1
+      +" C"+cpx+","+lk.ty1+" "+cpx+","+lk.sy1+" "+x0+","+lk.sy1
+      +" Z";
+
+    linkG.append("path").attr("d",path)
+      .attr("fill", col)
+      .attr("opacity", isWaste ? 0.30 : 0.13)
+      .attr("stroke","none");
+  });
+
+  // ── Draw crop (left) nodes ──
+  var cropG = svg.append("g").attr("class","ch1-crops");
+  crops.forEach(function(c){
+    var g = cropG.append("g").style("cursor","pointer");
+    g.append("rect")
+      .attr("x",leftX).attr("y",c.y0).attr("width",NODE_W).attr("height",c.h)
+      .attr("fill",c.color).attr("rx",2)
+      .on("mouseover",function(e){ d3.select(this).attr("opacity",1); showTip(e,c.label,Math.round(c.share*100)+"% of global calorie production"); })
+      .on("mousemove",moveTip)
+      .on("mouseout",function(){ d3.select(this).attr("opacity",0.9); hideTip(); });
+
+    // Label: to the left
+    g.append("text")
+      .attr("x", leftX-9).attr("y", c.y0+c.h/2)
+      .attr("text-anchor","end").attr("dominant-baseline","middle")
+      .attr("fill",c.color).attr("font-family","'Libre Baskerville',serif")
+      .attr("font-size","11px").text(c.label);
+
+    // Percentage
+    g.append("text")
+      .attr("x", leftX-9).attr("y", c.y0+c.h/2+13)
+      .attr("text-anchor","end").attr("dominant-baseline","middle")
+      .attr("fill",c.color).attr("opacity",0.6)
+      .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9px")
+      .text(Math.round(c.share*100)+"%");
+  });
+
+  // ── Draw use (right) nodes ──
+  var useG = svg.append("g").attr("class","ch1-uses");
+  uses.forEach(function(u){
+    var isWaste=u.id==="waste";
+    var g = useG.append("g").style("cursor","pointer");
+
+    if(isWaste){
+      // Bleed rect extending past right edge
+      var bleedW = W - rightX;
+      // Glow bloom behind waste band
+      g.append("rect")
+        .attr("x",rightX-4).attr("y",u.y0-6).attr("width",bleedW+10).attr("height",u.h+12)
+        .attr("fill","#E8547A").attr("opacity",0.08).attr("rx",3)
+        .attr("filter","url(#ch1-waste-glow)");
+      // Main node using bleed gradient
+      g.append("rect")
+        .attr("x",rightX).attr("y",u.y0).attr("width",bleedW).attr("height",u.h)
+        .attr("fill","url(#ch1-waste-bleed)").attr("rx",2)
+        .on("mouseover",function(e){ showTip(e,u.label,Math.round(u.share*100)+"% of production — "+u.desc,"#E8547A"); })
+        .on("mousemove",moveTip).on("mouseout",hideTip);
+      // Scatter particles bleeding off right
+      for(var p=0;p<22;p++){
+        var py = u.y0 + Math.random()*u.h;
+        var px = rightX + NODE_W + Math.random()*(W-rightX-NODE_W+30);
+        var pr = Math.random()*4+1;
+        g.append("circle").attr("cx",px).attr("cy",py).attr("r",pr)
+          .attr("fill","#E8547A").attr("opacity",Math.random()*0.22+0.03);
+      }
+      // Label left of node
+      g.append("text")
+        .attr("x",rightX+NODE_W+10).attr("y",u.y0+u.h/2-6)
+        .attr("text-anchor","start").attr("dominant-baseline","middle")
+        .attr("fill","#E8547A").attr("font-family","'Libre Baskerville',serif")
+        .attr("font-size","12px").attr("font-weight","700").text(u.label);
+      g.append("text")
+        .attr("x",rightX+NODE_W+10).attr("y",u.y0+u.h/2+8)
+        .attr("text-anchor","start").attr("dominant-baseline","middle")
+        .attr("fill","#E8547A").attr("opacity",0.7)
+        .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9.5px")
+        .text(Math.round(u.share*100)+"% — gone from the system");
+    } else {
+      g.append("rect")
+        .attr("x",rightX).attr("y",u.y0).attr("width",NODE_W).attr("height",u.h)
+        .attr("fill",u.color).attr("rx",2)
+        .on("mouseover",function(e){ d3.select(this).attr("opacity",1); showTip(e,u.label,Math.round(u.share*100)+"% of production — "+u.desc,u.color); })
+        .on("mousemove",moveTip).on("mouseout",function(){ d3.select(this).attr("opacity",0.88); hideTip(); });
+      // Label right of node
+      g.append("text")
+        .attr("x",rightX+NODE_W+9).attr("y",u.y0+u.h/2-5)
+        .attr("text-anchor","start").attr("dominant-baseline","middle")
+        .attr("fill",u.color).attr("font-family","'Libre Baskerville',serif")
+        .attr("font-size","11px").text(u.label);
+      g.append("text")
+        .attr("x",rightX+NODE_W+9).attr("y",u.y0+u.h/2+8)
+        .attr("text-anchor","start").attr("dominant-baseline","middle")
+        .attr("fill",u.color).attr("opacity",0.6)
+        .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","9px")
+        .text(Math.round(u.share*100)+"%");
+    }
+  });
+
+  // ── Column headers ──
+  svg.append("text").attr("x",leftX+NODE_W/2).attr("y",MT-16)
+    .attr("text-anchor","middle").attr("fill","var(--grey-2)")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px")
+    .attr("letter-spacing","0.18em").attr("font-weight","600").text("CROP TYPE");
+  svg.append("text").attr("x",rightX+NODE_W/2).attr("y",MT-16)
+    .attr("text-anchor","middle").attr("fill","var(--grey-2)")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px")
+    .attr("letter-spacing","0.18em").attr("font-weight","600").text("END USE");
+
+  // ── Total label ──
+  svg.append("text").attr("x",MID_X).attr("y",H-10)
+    .attr("text-anchor","middle").attr("fill","var(--grey-3)")
+    .attr("font-family","'Source Sans 3',sans-serif").attr("font-size","8.5px")
+    .attr("letter-spacing","0.12em")
+    .text("9,800 trillion kcal produced globally per year · enough for 10 billion people at 2,500 kcal/day");
+
+  // ── Legend ──
+  var legEl=document.getElementById("ch1-legend");
+  legEl.innerHTML="";
+  uses.forEach(function(u){
+    var div=document.createElement("div"); div.className="ch1-leg-item";
+    div.innerHTML='<div class="ch1-leg-dot" style="background:'+u.color+'"></div><span>'+u.label+'</span>';
     legEl.appendChild(div);
   });
 })();
